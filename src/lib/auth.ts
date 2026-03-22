@@ -63,7 +63,7 @@ function getSecret(name: string): Uint8Array {
  */
 export async function signAccessToken(payload: Omit<AccessTokenPayload, "type">): Promise<string> {
   const secret = getSecret("JWT_ACCESS_SECRET");
-  const expiry = process.env.JWT_ACCESS_EXPIRY ?? "15m";
+  const expiry = process.env.JWT_ACCESS_EXPIRY ?? "8h";
 
   return new SignJWT({ ...payload, type: "access" })
     .setProtectedHeader({ alg: "HS256" })

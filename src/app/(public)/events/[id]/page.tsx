@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
 import { useState, useEffect, use } from "react";
 import { motion } from "framer-motion";
 import {
@@ -22,15 +23,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [userRoles,   setUserRoles]   = useState<string[]>([]);
 
   useEffect(() => {
-    fetch(`/api/events/${id}`, { credentials: 'include' })
+    fetchWithAuth(`/api/events/${id}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => { setEvent(d.data); setLoading(false); });
 
-    fetch(`/api/comments?eventId=${id}`, { credentials: 'include' })
+    fetchWithAuth(`/api/comments?eventId=${id}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => setComments(d.data ?? []));
 
-    fetch("/api/users/me", { credentials: 'include' })
+    fetchWithAuth("/api/users/me", { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => setUserRoles(d.data?.roles ?? []))
       .catch(() => {});
@@ -44,7 +45,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const handleRegister = async () => {
     setRegistering(true);
     try {
-      const res = await fetch(`/api/events/${id}/register`, {
+      const res = await fetchWithAuth(`/api/events/${id}/register`, {
         method:      "POST",
         credentials: "include",
         headers:     { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
@@ -72,7 +73,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   const handleLike = async () => {
     setLiking(true);
-    const res = await fetch(`/api/events/${id}/like`, {
+    const res = await fetchWithAuth(`/api/events/${id}/like`, {
       method:      "POST",
       credentials: "include",
       headers:     { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
@@ -96,7 +97,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
     setPosting(true);
-    const res = await fetch("/api/comments", {
+    const res = await fetchWithAuth("/api/comments", {
       method:      "POST",
       credentials: "include",
       headers:     { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
