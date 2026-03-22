@@ -150,23 +150,41 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     return NextResponse.next();
   }
 
-  // 2. Public routes — no auth needed
+  // 2. Public routes — no auth required, but if user has a valid token,
+  //    still set user headers so route handlers can identify who is calling.
+  //    This is critical for routes like /api/events/[id]/register which are
+  //    publicly visible but require auth to perform write operations.
   if (isPublicRoute(pathname)) {
+    const token = request.cookies.get("access_token")?.value;
+
     // If already logged in, redirect away from /login
-    if (pathname === "/login") {
-      const token = request.cookies.get("access_token")?.value;
-      if (token) {
-        try {
-          const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
-          await jwtVerify(token, secret);
-          // Valid token — redirect to dashboard
-          return NextResponse.redirect(new URL("/dashboard", request.url));
-        } catch {
-          // Invalid/expired token — let them see the login page
-          // (The /api/auth/refresh endpoint will handle token renewal)
-        }
+    if (pathname === "/login" && token) {
+      try {
+        const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
+        await jwtVerify(token, secret);
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      } catch {
+        // expired/invalid — show login page
       }
     }
+
+    // If user has a valid token, pass their identity to route handlers
+    if (token) {
+      try {
+        const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET!);
+        const { payload: p } = await jwtVerify(token, secret);
+        const userPayload = p as { sub: string; email: string; roles: string[] };
+        const requestHeaders = new Headers(request.headers);
+        requestHeaders.set("x-user-id",    userPayload.sub);
+        requestHeaders.set("x-user-email", userPayload.email);
+        requestHeaders.set("x-user-roles", (userPayload.roles ?? []).join(","));
+        return NextResponse.next({ request: { headers: requestHeaders } });
+      } catch {
+        // Token expired — still allow the public route, just without user context
+        // The route handler's requireAuth() will return 401 if auth is needed
+      }
+    }
+
     return NextResponse.next();
   }
 
