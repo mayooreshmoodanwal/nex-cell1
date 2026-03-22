@@ -155,9 +155,10 @@ export default function LoginPage() {
 
     try {
       const res = await fetch("/api/auth/send-otp", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ email: email.toLowerCase().trim(), role }),
+        method:      "POST",
+        credentials: "include",
+        headers:     { "Content-Type": "application/json" },
+        body:        JSON.stringify({ email: email.toLowerCase().trim(), role }),
       });
       const data = await res.json();
 
@@ -195,8 +196,9 @@ export default function LoginPage() {
 
     try {
       const res = await fetch("/api/auth/verify-otp", {
-        method:  "POST",
-        headers: {
+        method:      "POST",
+        credentials: "include",
+        headers:     {
           "Content-Type": "application/json",
           ...(csrfToken ? { "x-csrf-token": csrfToken } : {}),
         },
@@ -325,11 +327,11 @@ export default function LoginPage() {
                           hover:shadow-lg ${r.glow}
                         `}
                       >
-                        {r.recommended && (
+                        {/* {r.recommended && (
                           <span className="absolute top-2 right-2 text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full border border-cyan-400/20">
                             Recommended
                           </span>
-                        )}
+                        )} */}
                         <div className={`p-2.5 rounded-lg ${r.iconBg}`}>
                           <Icon className={`w-5 h-5 ${r.iconColor}`} />
                         </div>

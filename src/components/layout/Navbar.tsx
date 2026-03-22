@@ -1,4 +1,5 @@
 "use client";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -18,7 +19,7 @@ export default function Navbar({ user }: { user: NavbarUser }) {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const res = await fetch("/api/notifications?limit=1");
+        const res = await fetchWithAuth("/api/notifications?limit=1");
         if (res.ok) {
           const data = await res.json();
           setUnreadCount(data.data?.unreadCount ?? 0);
@@ -34,7 +35,8 @@ export default function Navbar({ user }: { user: NavbarUser }) {
     const csrfToken = document.cookie
       .split(";").find((c) => c.trim().startsWith("csrf_token="))?.split("=")[1];
     try {
-      await fetch("/api/auth/logout", {
+      await fetchWithAuth("/api/auth/logout", {
+        credentials: 'include',
         method: "POST",
         headers: { ...(csrfToken ? { "x-csrf-token": csrfToken } : {}) },
       });
