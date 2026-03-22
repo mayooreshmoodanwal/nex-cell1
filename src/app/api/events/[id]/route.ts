@@ -1,28 +1,34 @@
 import { NextRequest } from "next/server";
-import { requireAuth, isAdmin, isMember } from "@/lib/auth";
+import { requireAuth, isAdmin, isMember, getCurrentUser } from "@/lib/auth";
 import { ok, err, parseBody, UpdateEventSchema } from "@/lib/validations";
 import { getEventById, updateEvent, deleteEvent } from "@/lib/services/event.service";
 import { getClientIp } from "@/lib/rate-limit";
-import { getCurrentUser } from "@/lib/auth";
 
 // GET /api/events/[id]
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const user = getCurrentUser(request);
-  const event = await getEventById(params.id, user?.id);
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user  = getCurrentUser(request);
+  const event = await getEventById(id, user?.id);
   if (!event) return err("Event not found", 404);
   return ok(event);
 }
 
 // PATCH /api/events/[id]
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
-  const user = requireAuth(request);
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user   = requireAuth(request);
   if (user instanceof Response) return user;
 
-  const event = await getEventById(params.id);
+  const event = await getEventById(id);
   if (!event) return err("Event not found", 404);
 
-  // Members can only edit their own events; admins can edit any
-  if (!isAdmin(user) && event.createdBy !== user.id) {
+  if (!isAdmin(user) && !isMember(user) && event.createdBy !== user.id) {
     return err("You can only edit your own events.", 403);
   }
 
@@ -30,10 +36,10 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   if (body instanceof Response) return body;
 
   const updated = await updateEvent(
-    params.id,
+    id,
     {
       ...body,
-      eventDate:            body.eventDate ? new Date(body.eventDate) : undefined,
+      eventDate:            body.eventDate            ? new Date(body.eventDate)            : undefined,
       registrationDeadline: body.registrationDeadline ? new Date(body.registrationDeadline) : undefined,
     },
     user.id,
@@ -44,11 +50,15 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE /api/events/[id]
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  const user = requireAuth(request);
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user   = requireAuth(request);
   if (user instanceof Response) return user;
-  if (!isAdmin(user)) return err("Only admins can delete events.", 403);
+  if (!isAdmin(user) && !isMember(user)) return err("Only admins and members can delete events.", 403);
 
-  await deleteEvent(params.id, user.id, getClientIp(request));
+  await deleteEvent(id, user.id, getClientIp(request));
   return ok({ message: "Event deleted." });
 }
