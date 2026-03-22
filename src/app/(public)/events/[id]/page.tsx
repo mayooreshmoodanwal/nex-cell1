@@ -22,15 +22,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const [userRoles,   setUserRoles]   = useState<string[]>([]);
 
   useEffect(() => {
-    fetch(`/api/events/${id}`)
+    fetch(`/api/events/${id}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => { setEvent(d.data); setLoading(false); });
 
-    fetch(`/api/comments?eventId=${id}`)
+    fetch(`/api/comments?eventId=${id}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => setComments(d.data ?? []));
 
-    fetch("/api/users/me")
+    fetch("/api/users/me", { credentials: 'include' })
       .then((r) => r.json())
       .then((d) => setUserRoles(d.data?.roles ?? []))
       .catch(() => {});
@@ -45,8 +45,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     setRegistering(true);
     try {
       const res = await fetch(`/api/events/${id}/register`, {
-        method:  "POST",
-        headers: { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
+        method:      "POST",
+        credentials: "include",
+        headers:     { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
       });
       const data = await res.json();
       if (!res.ok) {
@@ -72,8 +73,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const handleLike = async () => {
     setLiking(true);
     const res = await fetch(`/api/events/${id}/like`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
+      method:      "POST",
+      credentials: "include",
+      headers:     { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
     });
     const data = await res.json();
     if (res.ok) {
@@ -95,9 +97,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     e.preventDefault();
     setPosting(true);
     const res = await fetch("/api/comments", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
-      body:    JSON.stringify({ eventId: id, body: commentText }),
+      method:      "POST",
+      credentials: "include",
+      headers:     { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
+      body:        JSON.stringify({ eventId: id, body: commentText }),
     });
     const data = await res.json();
     if (!res.ok) { toast.error(data.error); }
