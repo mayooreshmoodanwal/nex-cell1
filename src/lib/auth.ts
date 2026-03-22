@@ -150,7 +150,7 @@ export function setAuthCookies(response: NextResponse, tokens: AuthTokens): void
   // Access token — short lived
   response.cookies.set("access_token", tokens.accessToken, {
     ...cookieOptions,
-    maxAge: 15 * 60, // 15 minutes in seconds
+    maxAge: 8 * 60 * 60, // 15 minutes in seconds 8h
   });
 
   // Refresh token — long lived
