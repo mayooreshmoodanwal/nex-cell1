@@ -3,14 +3,13 @@ import { useState, useEffect, use } from "react";
 import { motion } from "framer-motion";
 import {
   Calendar, MapPin, Users, Heart, Share2,
-  ArrowLeft, Loader2, CheckCircle, Lock, Settings,
+  ArrowLeft, Loader2, CheckCircle, Lock, Settings, Pencil, Eye, EyeOff,
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
 
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  // Next.js 15: params is a Promise — unwrap with React.use()
   const { id } = use(params);
 
   const [event,       setEvent]       = useState<any>(null);
@@ -40,7 +39,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const csrf = () =>
     document.cookie.split(";").find((c) => c.trim().startsWith("csrf_token="))?.split("=")[1];
 
-  const canManage = userRoles.includes("admin") || userRoles.includes("member");
+  const canManage = userRoles.includes("admin") || userRoles.includes("member") || userRoles.includes("treasurer");
 
   const handleRegister = async () => {
     setRegistering(true);
@@ -132,18 +131,51 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+
+      {/* Top bar */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <Link href="/events" className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-white transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to events
         </Link>
+
+        {/* Admin/Member action bar */}
         {canManage && (
-          <Link href={`/admin/events/${id}/registrations`}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-700 text-sm text-slate-300 hover:text-white hover:border-cyan-500/40 transition-all">
-            <Settings className="w-3.5 h-3.5 text-cyan-400" />
-            Manage registrations
-          </Link>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Published indicator */}
+            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${
+              event.isPublished
+                ? "bg-green-500/10 text-green-400 border-green-500/20"
+                : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+            }`}>
+              {event.isPublished ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              {event.isPublished ? "Published" : "Unpublished"}
+            </span>
+
+            {/* Manage registrations */}
+            <Link href={`/admin/events/${id}/registrations`}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-700 text-sm text-slate-300 hover:text-white hover:border-cyan-500/40 transition-all">
+              <Settings className="w-3.5 h-3.5 text-cyan-400" />
+              Registrations
+            </Link>
+
+            {/* Edit event */}
+            <Link href={`/events/${id}/edit`}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-sm text-cyan-400 hover:bg-cyan-500/20 transition-all">
+              <Pencil className="w-3.5 h-3.5" />
+              Edit event
+            </Link>
+          </div>
         )}
       </div>
+
+      {/* Unpublished warning for admins */}
+      {canManage && !event.isPublished && (
+        <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-sm text-amber-400">
+          ⚠ This event is unpublished. Regular users cannot see it. Go to{" "}
+          <Link href={`/events/${id}/edit`} className="underline hover:text-amber-300">Edit event</Link>{" "}
+          to publish it.
+        </div>
+      )}
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         {event.imageUrl && (
@@ -204,7 +236,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
 
-          <div className="prose prose-invert prose-sm max-w-none mb-6">
+          <div className="mb-6">
             <p className="text-slate-300 leading-relaxed whitespace-pre-line">{event.description}</p>
           </div>
 
@@ -254,6 +286,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </motion.div>
 
+      {/* Comments */}
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <div className="glass-card p-6">
           <h2 className="font-semibold text-white mb-4">Comments ({comments.length})</h2>

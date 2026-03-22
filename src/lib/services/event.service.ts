@@ -160,7 +160,7 @@ export async function createEvent(
 ) {
   const [event] = await db
     .insert(events)
-    .values({ ...data, createdBy })
+    .values({ ...data, createdBy, isPublished: true })
     .returning();
 
   await writeAuditLog({
@@ -250,7 +250,7 @@ export async function registerForEvent(
     .where(eq(events.id, eventId))
     .limit(1);
 
-  if (!event || event.isDeleted || !event.isPublished) {
+  if (!event || event.isDeleted) {
     return { success: false, error: "Event not found" };
   }
 
