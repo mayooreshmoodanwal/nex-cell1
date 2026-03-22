@@ -25,15 +25,17 @@ const PUBLIC_ROUTES = [
   "/api/auth/send-otp",
   "/api/auth/verify-otp",
   "/api/auth/refresh",
-  // Public event browsing (GET only — enforced in route handlers)
+  // Public event browsing — anyone can view events and event details
   "/events",
   "/archive",
+  "/api/events",   // GET list and GET detail — auth checked per-method in route handler
+  "/api/comments", // GET comments on events
 ];
 
 // Routes that require at least the "member" role
 const MEMBER_ROUTES = [
   "/events/create",
-  "/api/events",          // POST (create event)
+  // Note: /api/events is public for GET; POST auth is enforced in route handler
   "/api/expenses",        // POST (submit expense)
 ];
 
