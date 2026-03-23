@@ -305,68 +305,24 @@ export default function LoginPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="glass-card p-6">
-                <h2 className="text-lg font-bold text-white mb-1">Welcome back</h2>
-                <p className="text-sm text-slate-400 mb-6">Select your role to continue</p>
+              <div className="glass-card p-8 text-center">
 
-                <div className="space-y-3 mb-6">
-                  {ROLES.map((r, i) => {
-                    const Icon = r.icon;
-                    const isSelected = role === r.id;
-                    return (
-                      <motion.button
-                        key={r.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        onClick={() => setRole(r.id)}
-                        className={`
-                          w-full flex items-center gap-4 p-4 rounded-xl border transition-all duration-200 text-left relative overflow-hidden
-                          bg-gradient-to-r ${r.color} ${r.border}
-                          ${isSelected ? "ring-2 ring-cyan-400/50" : ""}
-                          hover:shadow-lg ${r.glow}
-                        `}
-                      >
-                        {/* {r.recommended && (
-                          <span className="absolute top-2 right-2 text-[10px] font-bold uppercase tracking-wider text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full border border-cyan-400/20">
-                            Recommended
-                          </span>
-                        )} */}
-                        <div className={`p-2.5 rounded-lg ${r.iconBg}`}>
-                          <Icon className={`w-5 h-5 ${r.iconColor}`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-white text-sm">{r.label}</div>
-                          <div className="text-xs text-slate-400 mt-0.5">{r.desc}</div>
-                        </div>
-                        {isSelected && (
-                          <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            className="w-5 h-5 rounded-full bg-cyan-400 flex items-center justify-center flex-shrink-0"
-                          >
-                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                              <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </motion.div>
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  Welcome to NexCell 🚀
+                </h2>
+
+                <p className="text-sm text-slate-400 mb-8">
+                  Login to continue to your dashboard
+                </p>
 
                 <button
                   onClick={() => setStep("email")}
-                  className="btn-neon w-full"
+                  className="btn-neon w-full flex items-center justify-center gap-2"
                 >
-                  Continue as {ROLES.find((r) => r.id === role)?.label}
+                  Login
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
-                <p className="text-xs text-slate-600 text-center mt-4">
-                  Your role is auto-assigned from our records.
-                  <br />This selection is just a UI hint.
-                </p>
               </div>
             </motion.div>
           )}
