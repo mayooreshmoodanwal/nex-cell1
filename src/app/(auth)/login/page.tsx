@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import {
   Users, Shield, Crown, ArrowRight,
   Mail, Loader2, RefreshCw, ChevronLeft, Zap,
+  User, Phone,
 } from "lucide-react";
-import Image from "next/image";
 
 // ─────────────────────────────────────────────────────────────
 // ROLE SELECTION CARDS
@@ -135,10 +135,14 @@ export default function LoginPage() {
   const [step,       setStep]       = useState<Step>("role");
   const [role,       setRole]       = useState<RoleId>("participant");
   const [email,      setEmail]      = useState("");
+  const [name,       setName]       = useState("");
+  const [phone,      setPhone]      = useState("");
   const [otp,        setOtp]        = useState("");
   const [loading,    setLoading]    = useState(false);
   const [cooldown,   setCooldown]   = useState(0);
   const [otpSentTo,  setOtpSentTo]  = useState("");
+  const [nameError,  setNameError]  = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   // Countdown timer for OTP resend
   useEffect(() => {
@@ -148,9 +152,28 @@ export default function LoginPage() {
   }, [cooldown]);
 
   // ── Send OTP ────────────────────────────────────────────────
+  const validateInputs = (): boolean => {
+    let valid = true;
+    setNameError("");
+    setPhoneError("");
+    if (!name.trim()) {
+      setNameError("Full name is required");
+      valid = false;
+    }
+    if (!phone.trim()) {
+      setPhoneError("Phone number is required");
+      valid = false;
+    } else if (!/^\d{10}$/.test(phone)) {
+      setPhoneError("Phone must be exactly 10 digits");
+      valid = false;
+    }
+    return valid;
+  };
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
+    if (!validateInputs()) return;
     setLoading(true);
 
     try {
@@ -158,7 +181,12 @@ export default function LoginPage() {
         method:      "POST",
         credentials: "include",
         headers:     { "Content-Type": "application/json" },
-        body:        JSON.stringify({ email: email.toLowerCase().trim(), role }),
+        body:        JSON.stringify({
+          email: email.toLowerCase().trim(),
+          name:  name.trim(),
+          phone: phone.trim(),
+          role,
+        }),
       });
       const data = await res.json();
 
@@ -205,6 +233,8 @@ export default function LoginPage() {
         body: JSON.stringify({
           email: otpSentTo,
           code:  code.replace(/\s/g, ""),
+          name:  name.trim(),
+          phone: phone.trim(),
         }),
       });
       const data = await res.json();
@@ -260,27 +290,14 @@ export default function LoginPage() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-10"
         >
-          {/* NexCell Logo SVG — reproduced from the brand asset */}
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="relative">
-              {/* Logo mark — wave + dots from the NexCell logo */}
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                <circle cx="10" cy="38" r="7" fill="url(#grad1)" />
-                <circle cx="38" cy="10" r="6" fill="url(#grad2)" />
-                <path d="M10 38 C10 24 24 14 38 10" stroke="white" strokeWidth="5"
-                  strokeLinecap="round" fill="none" />
-                <defs>
-                  <radialGradient id="grad1" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#22D3EE" />
-                    <stop offset="100%" stopColor="#0EA5E9" />
-                  </radialGradient>
-                  <radialGradient id="grad2" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#06B6D4" />
-                    <stop offset="100%" stopColor="#0284C7" />
-                  </radialGradient>
-                </defs>
-              </svg>
-            </div>
+            <img
+              src="/logo.png"
+              alt="NexCell Logo"
+              width={56}
+              height={56}
+              className="rounded-xl"
+            />
             <div>
               <h1 className="text-3xl font-black tracking-tight text-white leading-none">
                 Nex<span className="gradient-text">Cell</span>
@@ -355,21 +372,62 @@ export default function LoginPage() {
                 </div>
 
                 <form onSubmit={handleSendOtp} className="space-y-4">
+                  {/* Full Name */}
                   <div>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      required
-                      autoFocus
-                      className="input-dark"
-                    />
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => { setName(e.target.value); setNameError(""); }}
+                        placeholder="Your full name"
+                        required
+                        autoFocus
+                        className="input-dark pl-10"
+                      />
+                    </div>
+                    {nameError && <p className="text-xs text-red-400 mt-1">{nameError}</p>}
+                  </div>
+
+                  {/* Phone Number */}
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block">Phone Number</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setPhoneError(""); }}
+                        placeholder="10-digit phone number"
+                        required
+                        inputMode="numeric"
+                        maxLength={10}
+                        className="input-dark pl-10"
+                      />
+                    </div>
+                    {phoneError && <p className="text-xs text-red-400 mt-1">{phoneError}</p>}
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block">Email Address</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        className="input-dark pl-10"
+                      />
+                    </div>
                   </div>
 
                   <button
                     type="submit"
-                    disabled={loading || !email.trim()}
+                    disabled={loading || !email.trim() || !name.trim() || !phone.trim()}
                     className="btn-neon w-full disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
                   >
                     {loading ? (

@@ -248,6 +248,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 // Everything except static files (handled by shouldSkip above)
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|robots.txt).*)",
+    "/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.png$|.*\\.jpg$|.*\\.jpeg$|.*\\.gif$|.*\\.svg$|.*\\.webp$|.*\\.ico$).*)",
   ],
 };

@@ -96,7 +96,9 @@ export interface VerifyOtpResult {
 export async function verifyOtpAndLogin(
   email:     string,
   code:      string,
-  request:   NextRequest
+  request:   NextRequest,
+  name?:     string,
+  phone?:    string,
 ): Promise<VerifyOtpResult> {
   const normalizedEmail = email.toLowerCase().trim();
   const ipAddress = getClientIp(request);
@@ -129,7 +131,11 @@ export async function verifyOtpAndLogin(
     // First login — create user record
     const [newUser] = await db
       .insert(users)
-      .values({ email: normalizedEmail })
+      .values({
+        email: normalizedEmail,
+        ...(name  ? { name }  : {}),
+        ...(phone ? { phone } : {}),
+      })
       .returning();
     user = newUser;
     isNewUser = true;
@@ -141,7 +147,7 @@ export async function verifyOtpAndLogin(
     await assignPredefinedRoles(user.id, normalizedEmail);
 
     // Send welcome email (fire and forget)
-    sendWelcomeEmail({ to: normalizedEmail, name: "" }).catch(() => {});
+    sendWelcomeEmail({ to: normalizedEmail, name: name ?? "" }).catch(() => {});
 
     // Audit
     await writeAuditLog({
@@ -154,10 +160,13 @@ export async function verifyOtpAndLogin(
       userAgent,
     });
   } else {
-    // Returning user — update last login
+    // Returning user — update last login + name/phone if provided
+    const updateData: Record<string, unknown> = { lastLoginAt: new Date() };
+    if (name)  updateData.name  = name;
+    if (phone) updateData.phone = phone;
     await db
       .update(users)
-      .set({ lastLoginAt: new Date() })
+      .set(updateData)
       .where(eq(users.id, user.id));
   }
 

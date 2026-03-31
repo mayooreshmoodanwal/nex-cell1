@@ -1,27 +1,41 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Save, Trash2, Loader2 } from "lucide-react";
+import { Save, Trash2, Loader2, Phone as PhoneIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<{
+    email?: string;
+    name?: string | null;
+    phone?: string | null;
+    roles?: string[];
+  } | null>(null);
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const csrf = () => document.cookie.split(";").find(c => c.trim().startsWith("csrf_token="))?.split("=")[1];
 
   useEffect(() => {
-    fetch("/api/users/me").then(r => r.json()).then(d => { setProfile(d.data); setName(d.data?.name ?? ""); });
+    fetch("/api/users/me").then(r => r.json()).then(d => {
+      setProfile(d.data);
+      setName(d.data?.name ?? "");
+      setPhone(d.data?.phone ?? "");
+    });
   }, []);
 
   const handleSave = async () => {
+    if (phone && !/^\d{10}$/.test(phone)) {
+      toast.error("Phone must be exactly 10 digits");
+      return;
+    }
     setSaving(true);
     const res = await fetch("/api/users/me", {
       method: "PATCH", headers: { "Content-Type": "application/json", ...(csrf() ? { "x-csrf-token": csrf()! } : {}) },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, phone: phone || undefined }),
     });
     if (res.ok) toast.success("Profile updated!"); else toast.error("Failed to update");
     setSaving(false);
@@ -48,6 +62,11 @@ export default function ProfilePage() {
           <div>
             <p className="font-semibold text-white">{profile.name || "No name set"}</p>
             <p className="text-sm text-slate-400">{profile.email}</p>
+            {profile.phone && (
+              <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                <PhoneIcon className="w-3 h-3" /> {profile.phone}
+              </p>
+            )}
             <div className="flex gap-1 mt-1 flex-wrap">
               {profile.roles?.map((r: string) => (
                 <span key={r} className="badge-cyan text-[10px] capitalize">{r}</span>
@@ -58,6 +77,20 @@ export default function ProfilePage() {
         <div>
           <label className="text-xs font-medium text-slate-400 mb-1.5 block">Display name</label>
           <input value={name} onChange={e => setName(e.target.value)} className="input-dark" placeholder="Your name" />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-slate-400 mb-1.5 block">Phone number</label>
+          <input
+            value={phone}
+            onChange={e => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+            className="input-dark"
+            placeholder="10-digit phone number"
+            inputMode="numeric"
+            maxLength={10}
+          />
+          {phone && !/^\d{10}$/.test(phone) && (
+            <p className="text-xs text-red-400 mt-1">Must be exactly 10 digits</p>
+          )}
         </div>
         <button onClick={handleSave} disabled={saving} className="btn-neon w-full disabled:opacity-50">
           {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save changes</>}

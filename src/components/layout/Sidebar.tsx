@@ -65,15 +65,13 @@ export default function Sidebar({ user }: { user: SidebarUser }) {
       {/* Logo */}
       <div className="p-6 border-b border-navy-800">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <svg width="32" height="32" viewBox="0 0 48 48" fill="none">
-            <circle cx="10" cy="38" r="7" fill="url(#sg1)" />
-            <circle cx="38" cy="10" r="6" fill="url(#sg2)" />
-            <path d="M10 38 C10 24 24 14 38 10" stroke="white" strokeWidth="5" strokeLinecap="round" fill="none" />
-            <defs>
-              <radialGradient id="sg1"><stop stopColor="#22D3EE" /><stop offset="1" stopColor="#0EA5E9" /></radialGradient>
-              <radialGradient id="sg2"><stop stopColor="#06B6D4" /><stop offset="1" stopColor="#0284C7" /></radialGradient>
-            </defs>
-          </svg>
+          <img
+            src="/logo.png"
+            alt="NexCell Logo"
+            width={36}
+            height={36}
+            className="rounded-lg"
+          />
           <div>
             <span className="text-lg font-black text-white">Nex<span className="gradient-text">Cell</span></span>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest -mt-0.5">Platform</p>

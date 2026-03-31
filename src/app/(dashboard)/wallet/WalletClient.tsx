@@ -58,11 +58,11 @@ export default function WalletClient({ walletData, paymentRequests }: any) {
             <div className="text-5xl font-black text-white mb-1" style={{ letterSpacing: "-0.02em" }}>
               <span className="text-cyan-400">₥</span>{balance.toLocaleString("en-IN")}
             </div>
-            <p className="text-slate-400 text-sm">≈ ₹{(balance / 100).toFixed(2)} INR equivalent</p>
-            <p className="text-slate-600 text-xs mt-1">1 INR = 100 Mirai Bucks (₥)</p>
-            <button onClick={() => setShowForm(true)} className="btn-neon mt-5">
+            {/* <p className="text-slate-400 text-sm">≈ ₹{(balance / 100).toFixed(2)} INR equivalent</p> */}
+            {/* <p className="text-slate-600 text-xs mt-1">1 INR = 100 Mirai Bucks (₥)</p> */}
+            {/* <button onClick={() => setShowForm(true)} className="btn-neon mt-5">
               <Plus className="w-4 h-4" /> Add Mirai Bucks
-            </button>
+            </button> */}
           </div>
         </div>
       </motion.div>

@@ -125,8 +125,15 @@ export const PaginationSchema = z.object({
 });
 
 // ── Auth schemas ──────────────────────────────────────────────
+export const PhoneSchema = z
+  .string()
+  .length(10, "Phone number must be exactly 10 digits")
+  .regex(/^\d{10}$/, "Phone number must contain only numbers");
+
 export const SendOtpSchema = z.object({
   email: EmailSchema,
+  name:  z.string().min(1, "Name is required").max(100).trim(),
+  phone: PhoneSchema,
   role:  z.enum(["participant", "member", "admin"]).optional(),
   // 'role' is a UI hint only — actual role comes from predefined_roles table
 });
@@ -134,11 +141,14 @@ export const SendOtpSchema = z.object({
 export const VerifyOtpSchema = z.object({
   email: EmailSchema,
   code:  OtpCodeSchema,
+  name:  z.string().min(1, "Name is required").max(100).trim(),
+  phone: PhoneSchema,
 });
 
 // ── User schemas ──────────────────────────────────────────────
 export const UpdateProfileSchema = z.object({
   name:      z.string().min(1).max(100).trim().optional(),
+  phone:     PhoneSchema.optional(),
   avatarUrl: z.string().url().optional(),
 });
 

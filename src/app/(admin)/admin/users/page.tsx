@@ -354,7 +354,8 @@ export default function AdminUsersPage() {
   const filtered = users.filter((u) =>
     !search ||
     u.email?.toLowerCase().includes(search.toLowerCase()) ||
-    u.name?.toLowerCase().includes(search.toLowerCase())
+    u.name?.toLowerCase().includes(search.toLowerCase()) ||
+    u.phone?.includes(search)
   );
 
   const fadeUp = {
@@ -416,6 +417,7 @@ export default function AdminUsersPage() {
                   <thead>
                     <tr>
                       <th className="p-4">User</th>
+                      <th className="p-4">Phone</th>
                       <th className="p-4">Roles</th>
                       <th className="p-4">Joined</th>
                       <th className="p-4">Last login</th>
@@ -439,6 +441,9 @@ export default function AdminUsersPage() {
                               <p className="text-xs text-slate-500">{user.email}</p>
                             </div>
                           </div>
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm text-slate-300">{user.phone ?? "—"}</span>
                         </td>
                         <td className="p-4">
                           <div className="flex flex-wrap gap-1">

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   if (body instanceof Response) return body;
 
   // 3. Verify OTP and create session
-  const result = await verifyOtpAndLogin(body.email, body.code, request);
+  const result = await verifyOtpAndLogin(body.email, body.code, request, body.name, body.phone);
 
   if (!result.success) {
     return err(result.error ?? "Invalid code", 401);

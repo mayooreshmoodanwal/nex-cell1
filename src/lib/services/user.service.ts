@@ -22,7 +22,7 @@ export async function getUserById(id: string) {
   return { ...user, roles: roles.map((r) => r.role) };
 }
 
-export async function updateProfile(userId: string, data: { name?: string; avatarUrl?: string }) {
+export async function updateProfile(userId: string, data: { name?: string; phone?: string; avatarUrl?: string }) {
   const [updated] = await db
     .update(users)
     .set({ ...data })
@@ -76,7 +76,7 @@ export async function revokeRole(
 export async function getAllUsers(limit = 50, offset = 0) {
   const userList = await db
     .select({
-      id: users.id, email: users.email, name: users.name,
+      id: users.id, email: users.email, name: users.name, phone: users.phone,
       createdAt: users.createdAt, lastLoginAt: users.lastLoginAt, isDeleted: users.isDeleted,
     })
     .from(users)

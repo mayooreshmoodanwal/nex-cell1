@@ -108,6 +108,7 @@ export const users = pgTable("users", {
   id:          uuid("id").primaryKey().defaultRandom(),
   email:       text("email").notNull().unique(),
   name:        text("name"),
+  phone:       text("phone"),
   avatarUrl:   text("avatar_url"),
   isDeleted:   boolean("is_deleted").notNull().default(false),
   // Soft delete: data is anonymised, not removed.
