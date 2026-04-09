@@ -109,6 +109,10 @@ export const users = pgTable("users", {
   email:       text("email").notNull().unique(),
   name:        text("name"),
   phone:       text("phone"),
+  bio:         text("bio"),
+  linkedinUrl: text("linkedin_url"),
+  showInDirectory: boolean("show_in_directory").notNull().default(false),
+  directoryRole: text("directory_role"),
   avatarUrl:   text("avatar_url"),
   isDeleted:   boolean("is_deleted").notNull().default(false),
   // Soft delete: data is anonymised, not removed.
@@ -249,6 +253,10 @@ export const eventRegistrations = pgTable(
     // Key = "reg:{eventId}:{userId}" — prevents double registration
     registeredAt:    timestamp("registered_at", { withTimezone: true }).notNull().defaultNow(),
     cancelledAt:     timestamp("cancelled_at", { withTimezone: true }),
+    // Denormalized user fields — populated at registration time
+    name:            text("name"),
+    phone:           text("phone"),
+    email:           text("email"),
   },
   (table) => ({
     // One registration per user per event
@@ -497,6 +505,32 @@ export const appConfig = pgTable("app_config", {
 });
 
 // ─────────────────────────────────────────────────────────────
+// TABLE 19: certificates
+// Issued to users for event participation, winning, or standalone
+// achievements. Admin & members can issue; only admin can delete.
+// ─────────────────────────────────────────────────────────────
+export const certificates = pgTable(
+  "certificates",
+  {
+    id:             uuid("id").primaryKey().defaultRandom(),
+    userId:         uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    eventId:        uuid("event_id").references(() => events.id, { onDelete: "set null" }),
+    // NULL eventId = standalone certificate (e.g. "Member of the Month")
+    title:          text("title").notNull(),
+    description:    text("description"),
+    certificateUrl: text("certificate_url").notNull(), // Cloudinary or external URL
+    issuedBy:       uuid("issued_by").notNull().references(() => users.id, { onDelete: "restrict" }),
+    issuedAt:       timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt:      timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIdx:   index("certificates_user_id_idx").on(table.userId),
+    eventIdIdx:  index("certificates_event_id_idx").on(table.eventId),
+    issuedByIdx: index("certificates_issued_by_idx").on(table.issuedBy),
+  })
+);
+
+// ─────────────────────────────────────────────────────────────
 // RELATIONS
 // Drizzle uses these for type-safe joins and query building.
 // ─────────────────────────────────────────────────────────────
@@ -511,6 +545,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   paymentRequests:     many(paymentRequests),
   expenses:            many(expenses),
   createdEvents:       many(events, { relationName: "createdEvents" }),
+  certificates:        many(certificates, { relationName: "userCertificates" }),
+  issuedCertificates:  many(certificates, { relationName: "issuedCertificates" }),
 }));
 
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
@@ -522,6 +558,7 @@ export const eventsRelations = relations(events, ({ many, one }) => ({
   registrations: many(eventRegistrations),
   likes:         many(eventLikes),
   comments:      many(comments),
+  certificates:  many(certificates),
   createdBy:     one(users, { fields: [events.createdBy], references: [users.id], relationName: "createdEvents" }),
 }));
 
@@ -559,6 +596,12 @@ export const commentsRelations = relations(comments, ({ one, many }) => ({
   reports:     many(commentReports),
 }));
 
+export const certificatesRelations = relations(certificates, ({ one }) => ({
+  user:     one(users,  { fields: [certificates.userId],   references: [users.id], relationName: "userCertificates" }),
+  event:    one(events, { fields: [certificates.eventId],  references: [events.id] }),
+  issuedBy: one(users,  { fields: [certificates.issuedBy], references: [users.id], relationName: "issuedCertificates" }),
+}));
+
 // ─────────────────────────────────────────────────────────────
 // TYPE EXPORTS
 // Use these TypeScript types everywhere in the codebase.
@@ -579,6 +622,8 @@ export type Expense           = typeof expenses.$inferSelect;
 export type Notification      = typeof notifications.$inferSelect;
 export type AuditLog          = typeof auditLogs.$inferSelect;
 export type AppConfig         = typeof appConfig.$inferSelect;
+export type Certificate       = typeof certificates.$inferSelect;
+export type NewCertificate    = typeof certificates.$inferInsert;
 
 // Role type for use in application logic
 export type Role = "participant" | "member" | "treasurer" | "admin";

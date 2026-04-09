@@ -10,22 +10,9 @@
 import { db } from "@/lib/db/client";
 import { notifications, users } from "@/lib/db/schema";
 import { eq, and, desc, count } from "drizzle-orm";
-import type { NotificationTypeEnum } from "@/lib/db/schema";
+import type { notificationTypeEnum } from "@/lib/db/schema";
 
-// Re-export the enum type for use in other services
-type NotificationType =
-  | "event_registration"
-  | "wallet_credit"
-  | "wallet_debit"
-  | "payment_approved"
-  | "payment_rejected"
-  | "comment_approved"
-  | "comment_rejected"
-  | "expense_approved"
-  | "expense_rejected"
-  | "expense_repaid"
-  | "role_changed"
-  | "general";
+export type NotificationType = typeof notificationTypeEnum.enumValues[number];
 
 export interface CreateNotificationParams {
   userId: string;

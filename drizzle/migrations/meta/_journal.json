@@ -15,6 +15,20 @@
       "when": 1774940998158,
       "tag": "0001_boring_bulldozer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774992262064,
+      "tag": "0002_naive_falcon",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775711763822,
+      "tag": "0003_sturdy_rocket_raccoon",
+      "breakpoints": true
     }
   ]
 }

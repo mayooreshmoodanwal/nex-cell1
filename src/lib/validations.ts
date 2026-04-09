@@ -120,7 +120,7 @@ export const UuidSchema = z.string().uuid("Invalid ID format");
 
 // Pagination
 export const PaginationSchema = z.object({
-  limit:  z.coerce.number().int().min(1).max(100).default(20),
+  limit:  z.coerce.number().int().min(1).max(10000).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 });
 
@@ -147,9 +147,12 @@ export const VerifyOtpSchema = z.object({
 
 // ── User schemas ──────────────────────────────────────────────
 export const UpdateProfileSchema = z.object({
-  name:      z.string().min(1).max(100).trim().optional(),
-  phone:     PhoneSchema.optional(),
-  avatarUrl: z.string().url().optional(),
+  name:            z.string().min(1).max(100).trim().optional(),
+  phone:           PhoneSchema.optional(),
+  avatarUrl:       z.string().url().optional(),
+  bio:             z.string().max(500, "Bio cannot exceed 500 characters").optional(),
+  linkedinUrl:     z.string().url("Must be a valid URL").optional().or(z.literal('')),
+  showInDirectory: z.boolean().optional(),
 });
 
 export const AssignRoleSchema = z.object({
@@ -246,6 +249,15 @@ export const ModerateCommentSchema = z.object({
 
 export const ReportCommentSchema = z.object({
   reason: z.string().min(5).max(500).trim(),
+});
+
+// ── Certificate schemas ───────────────────────────────────────
+export const CreateCertificateSchema = z.object({
+  userId:         UuidSchema,
+  eventId:        UuidSchema.optional(),
+  title:          z.string().min(3, "Title must be at least 3 characters").max(200).trim(),
+  description:    z.string().max(500).trim().optional(),
+  certificateUrl: z.string().url("Certificate URL must be a valid URL"),
 });
 
 // ── Config schemas ────────────────────────────────────────────

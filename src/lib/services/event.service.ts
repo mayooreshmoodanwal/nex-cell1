@@ -304,6 +304,13 @@ export async function registerForEvent(
     }
   }
 
+  // Load user for registration fields
+  const [regUser] = await db
+    .select({ name: users.name, phone: users.phone, email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
   // Insert registration
   await db
     .insert(eventRegistrations)
@@ -314,6 +321,9 @@ export async function registerForEvent(
       paymentStatus,
       amountPaidMb:    event.priceMb ?? 0,
       idempotencyKey,
+      name:            regUser?.name ?? null,
+      phone:           regUser?.phone ?? null,
+      email:           regUser?.email ?? null,
     })
     .onConflictDoUpdate({
       target: [eventRegistrations.eventId, eventRegistrations.userId],

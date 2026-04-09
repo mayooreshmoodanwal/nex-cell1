@@ -14,7 +14,7 @@
 import crypto from "crypto";
 import { db } from "./db/client";
 import { otpCodes } from "./db/schema";
-import { eq, and, lt, isNull } from "drizzle-orm";
+import { eq, and, lt, gt, isNull } from "drizzle-orm";
 
 // ─────────────────────────────────────────────────────────────
 // CONSTANTS (also configurable via app_config table)
@@ -203,7 +203,7 @@ export async function getOtpCooldown(email: string): Promise<number> {
       and(
         eq(otpCodes.email, normalizedEmail),
         // Find OTPs created within the cooldown window
-        lt(cooldownWindow, otpCodes.createdAt)
+        gt(otpCodes.createdAt, cooldownWindow)
       )
     )
     .orderBy(otpCodes.createdAt)

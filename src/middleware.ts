@@ -19,7 +19,6 @@ import { jwtVerify } from "jose";
 // ROUTE CONFIGURATION
 // ─────────────────────────────────────────────────────────────
 
-// Routes that anyone can access (no login needed)
 const PUBLIC_ROUTES = [
   "/login",
   "/api/auth/send-otp",
@@ -28,8 +27,10 @@ const PUBLIC_ROUTES = [
   // Public event browsing — anyone can view events and event details
   "/events",
   "/archive",
-  "/api/events",   // GET list and GET detail — auth checked per-method in route handler
+  "/api/events",   // GET list and GET detail 
   "/api/comments", // GET comments on events
+  "/members",      // Public members directory
+  "/api/members",  // Public members API
 ];
 
 // Routes that require at least the "member" role

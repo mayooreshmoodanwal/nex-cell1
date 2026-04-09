@@ -25,18 +25,17 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
         className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="page-title">Events</h1>
-          <p className="text-slate-400 mt-1">Discover and register for upcoming NexCell events</p>
+          <p className="hud-label mb-2">Events</p>
+          <h1 className="display-heading text-xl text-white glitch-text">Nexus Events</h1>
+          <p className="text-slate-500 mt-1 text-sm font-mono">Discover and register for upcoming NexCell events</p>
         </div>
         {canCreate && (
           <Link href="/events/create">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="btn-neon"
-            >
-              <Plus className="w-4 h-4" /> Create event
-            </motion.button>
+            <button className="cyber-btn">
+              <span className="flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Create Event
+              </span>
+            </button>
           </Link>
         )}
       </motion.div>
@@ -52,10 +51,10 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
         <div className="flex gap-2">
           {(["all", "free", "paid_mb"] as const).map((f) => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all clip-cyber-sm ${
                 filter === f
                   ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                  : "bg-navy-800 text-slate-400 hover:text-white border border-navy-700"
+                  : "bg-navy-800/60 text-slate-400 hover:text-white border border-navy-700/60 hover:border-cyan-500/20"
               }`}>
               {f === "all" ? "All" : f === "free" ? "Free" : "Paid"}
             </button>
@@ -65,11 +64,11 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
 
       {/* Events grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-20">
+        <div className="text-center py-20 hud-card p-10">
           <Calendar className="w-12 h-12 text-slate-700 mx-auto mb-3" />
-          <p className="text-slate-400">No events found</p>
+          <p className="text-slate-400 font-mono">No events found</p>
           {canCreate && (
-            <Link href="/events/create" className="text-cyan-400 hover:underline text-sm mt-2 block">
+            <Link href="/events/create" className="text-cyan-400 hover:underline text-sm mt-2 block neon-underline">
               Create the first event →
             </Link>
           )}
@@ -79,9 +78,9 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
           {filtered.map((event, i) => (
             <motion.div key={event.id} custom={i} initial="hidden" animate="visible" variants={fadeUp}>
               <Link href={`/events/${event.id}`}>
-                <div className="glass-card-hover overflow-hidden cursor-pointer h-full flex flex-col">
+                <div className="hud-card perspective-card overflow-hidden cursor-pointer h-full flex flex-col group">
                   {/* Image */}
-                  <div className="h-40 bg-gradient-to-br from-navy-800 to-navy-900 relative overflow-hidden flex-shrink-0">
+                  <div className="h-40 bg-gradient-to-br from-navy-800 to-navy-900 relative overflow-hidden flex-shrink-0 scan-overlay">
                     {event.imageUrl ? (
                       <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
                     ) : (
@@ -92,21 +91,20 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
                     <div className="absolute top-3 left-3">
                       {event.type === "free"
                         ? <span className="badge-green">Free</span>
-                        : <span className="badge-cyan">₥{event.priceMb?.toLocaleString()}</span>}
+                        : <span className="badge-cyan font-mono">₥{event.priceMb?.toLocaleString()}</span>}
                     </div>
                     {event.isRegistered && (
                       <div className="absolute top-3 right-3">
                         <span className="badge-purple">Registered</span>
                       </div>
                     )}
-                    {/* Capacity indicator */}
                     {event.maxParticipants && (
                       <div className="absolute bottom-3 right-3">
                         {Number(event.registrationCount ?? 0) >= event.maxParticipants ? (
                           <span className="badge-red">Full</span>
                         ) : (
-                          <span className="badge-gray text-xs">
-                            {event.maxParticipants - Number(event.registrationCount ?? 0)} spots left
+                          <span className="badge-amber text-xs font-mono">
+                            {event.maxParticipants - Number(event.registrationCount ?? 0)} spots
                           </span>
                         )}
                       </div>
@@ -114,23 +112,23 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
                   </div>
                   {/* Content */}
                   <div className="p-4 flex flex-col flex-1">
-                    <h3 className="font-semibold text-white mb-1 line-clamp-2 leading-snug">{event.title}</h3>
+                    <h3 className="font-semibold text-white mb-1 line-clamp-2 leading-snug group-hover:text-cyan-400 transition-colors">{event.title}</h3>
                     {event.shortDescription && (
                       <p className="text-xs text-slate-500 line-clamp-2 mb-3">{event.shortDescription}</p>
                     )}
                     <div className="space-y-1.5 mt-auto">
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
                         <Calendar className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0" />
                         {format(new Date(event.eventDate), "EEE, dd MMM yyyy")}
                       </div>
                       {event.venue && (
-                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
                           <MapPin className="w-3.5 h-3.5 text-cyan-500 flex-shrink-0" />
                           {event.venue}
                         </div>
                       )}
-                      <div className="flex items-center justify-between pt-2 border-t border-navy-700 mt-2">
-                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <div className="flex items-center justify-between pt-2 border-t border-navy-700/50 mt-2">
+                        <div className="flex items-center gap-3 text-xs text-slate-500 font-mono">
                           <span className="flex items-center gap-1">
                             <Users className="w-3 h-3" />
                             {Number(event.registrationCount ?? 0)}
@@ -141,7 +139,7 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
                             {Number(event.likeCount ?? 0)}
                           </span>
                         </div>
-                        <ArrowRight className="w-4 h-4 text-slate-600" />
+                        <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 group-hover:translate-x-1 transition-all" />
                       </div>
                     </div>
                   </div>

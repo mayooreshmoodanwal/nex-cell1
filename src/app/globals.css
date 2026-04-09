@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ── Google Fonts ─────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
 
 /* ── CSS Variables ────────────────────────────────────────── */
 :root {
@@ -17,6 +17,12 @@
   --brand-500: #0EA5E9;
   --neon-blue: #00D4FF;
   --neon-cyan: #00FFED;
+  --neon-purple: #A855F7;
+  --neon-pink: #EC4899;
+  --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.4), 0 0 60px rgba(0, 212, 255, 0.15);
+  --glow-purple: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 60px rgba(168, 85, 247, 0.15);
+  --hud-border: rgba(6, 182, 212, 0.2);
+  --hud-glow: rgba(6, 182, 212, 0.08);
 }
 
 /* ── Base Reset ───────────────────────────────────────────── */
@@ -40,6 +46,8 @@ body {
   overflow-x: hidden;
 }
 
+
+
 /* ── Selection ────────────────────────────────────────────── */
 ::selection {
   background-color: rgba(6, 182, 212, 0.3);
@@ -48,24 +56,109 @@ body {
 
 /* ── Scrollbar ────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 ::-webkit-scrollbar-track {
   background: var(--navy-900);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--navy-600);
-  border-radius: 3px;
+  border-radius: 2px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--cyan-500);
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
 }
 
-/* ── Component Utilities ──────────────────────────────────── */
+/* ════════════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ════════════════════════════════════════════════════════════ */
+
+/* Glitch effect — DISABLED */
+@keyframes glitch {
+  0%, 100% { text-shadow: none; transform: none; }
+}
+@keyframes glitch-subtle {
+  0%, 100% { text-shadow: none; transform: none; }
+}
+
+/* Horizontal scan line */
+@keyframes scan-line {
+  0%   { top: -10%; }
+  100% { top: 110%; }
+}
+
+/* HUD corner pulse */
+@keyframes hud-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.9; }
+}
+
+/* HUD breathe for borders */
+@keyframes hud-breathe {
+  0%, 100% { border-color: rgba(6, 182, 212, 0.15); }
+  50%      { border-color: rgba(6, 182, 212, 0.35); }
+}
+
+/* 3D float */
+@keyframes float-3d {
+  0%, 100% { transform: translateY(0) rotateX(0deg) rotateY(0deg); }
+  25%      { transform: translateY(-8px) rotateX(2deg) rotateY(-2deg); }
+  50%      { transform: translateY(-12px) rotateX(0deg) rotateY(0deg); }
+  75%      { transform: translateY(-6px) rotateX(-2deg) rotateY(2deg); }
+}
+
+/* Grid flow — for background grids */
+@keyframes grid-flow {
+  0%   { transform: perspective(500px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(60px); }
+}
+
+/* Marquee scroll */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Neon border rotate */
+@keyframes neon-rotate {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Sweep reveal for buttons */
+@keyframes sweep-in {
+  from { transform: translateX(-101%); }
+  to   { transform: translateX(0); }
+}
+
+/* Data stream — for monospace elements */
+@keyframes data-stream {
+  0%   { opacity: 0.3; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+/* Dot pulse — for live indicators */
+@keyframes dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.5); }
+  50%      { box-shadow: 0 0 0 8px rgba(6, 182, 212, 0); }
+}
+
+/* Ring spin — for avatar rings */
+@keyframes ring-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════════════════════════════════
+   COMPONENT UTILITIES
+   ════════════════════════════════════════════════════════════ */
 @layer components {
 
-  /* Glassmorphism card */
+  /* ── Glassmorphism cards (enhanced) ──────────────────── */
   .glass-card {
     @apply bg-navy-900/80 backdrop-blur-md border border-navy-700/60 rounded-2xl;
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.04);
@@ -80,7 +173,98 @@ body {
     transform: translateY(-2px);
   }
 
-  /* Neon button - primary CTA */
+  /* ── HUD Card — with corner bracket decorations ─────── */
+  .hud-card {
+    @apply relative bg-navy-900/80 backdrop-blur-md border border-navy-700/40 rounded-lg overflow-hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s cubic-bezier(.25,.46,.45,.94);
+  }
+  .hud-card::before,
+  .hud-card::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-color: var(--cyan-400);
+    opacity: 0.4;
+    transition: opacity 0.3s;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .hud-card::before {
+    top: 6px; left: 6px;
+    border-top: 1.5px solid;
+    border-left: 1.5px solid;
+  }
+  .hud-card::after {
+    bottom: 6px; right: 6px;
+    border-bottom: 1.5px solid;
+    border-right: 1.5px solid;
+  }
+  .hud-card:hover::before,
+  .hud-card:hover::after {
+    opacity: 1;
+  }
+  .hud-card:hover {
+    border-color: rgba(6, 182, 212, 0.35);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(6, 182, 212, 0.08);
+    transform: translateY(-3px);
+  }
+
+  /* ── Card hover — smooth lift (no 3D tilt) ─────────── */
+  .perspective-card {
+    @apply relative overflow-hidden;
+    transition: all 0.4s cubic-bezier(.25,.46,.45,.94);
+  }
+  .perspective-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 20px rgba(6, 182, 212, 0.08);
+  }
+
+  /* ── Cyber Button — clipped corners with sweep ──────── */
+  .cyber-btn {
+    @apply relative inline-flex items-center justify-center gap-2 px-7 py-3.5 font-semibold text-sm text-white uppercase tracking-wider overflow-hidden;
+    background: var(--navy-800);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    transition: all 0.4s cubic-bezier(.25,.46,.45,.94);
+    letter-spacing: 0.1em;
+  }
+  .cyber-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 50%, #00FFED 100%);
+    transform: translateX(-101%);
+    transition: transform 0.45s cubic-bezier(.25,.46,.45,.94);
+    z-index: 0;
+  }
+  .cyber-btn:hover::before {
+    transform: translateX(0);
+  }
+  .cyber-btn:hover {
+    border-color: rgba(6, 182, 212, 0.7);
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 60px rgba(0, 212, 255, 0.1);
+  }
+  .cyber-btn span, .cyber-btn > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Cyber button variant: danger */
+  .cyber-btn-danger {
+    @apply cyber-btn;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  .cyber-btn-danger::before {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  }
+  .cyber-btn-danger:hover {
+    border-color: rgba(239, 68, 68, 0.7);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  }
+
+  /* ── Neon button - primary CTA (preserved + enhanced) ── */
   .btn-neon {
     @apply relative inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all duration-300 overflow-hidden;
     background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 50%, #00FFED 100%);
@@ -95,13 +279,13 @@ body {
   .btn-neon::before {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 100%);
   }
   .btn-neon:hover::before {
     opacity: 1;
   }
 
-  /* Secondary button - ghost style */
+  /* ── Ghost button ───────────────────────────────────── */
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium text-sm text-slate-300 border border-navy-700 transition-all duration-200;
     background: rgba(20, 27, 45, 0.6);
@@ -111,7 +295,7 @@ body {
     background: rgba(6, 182, 212, 0.08);
   }
 
-  /* Danger button */
+  /* ── Danger button ──────────────────────────────────── */
   .btn-danger {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium text-sm text-red-400 border border-red-500/30 transition-all duration-200;
     background: rgba(239, 68, 68, 0.08);
@@ -121,7 +305,7 @@ body {
     background: rgba(239, 68, 68, 0.15);
   }
 
-  /* Input field */
+  /* ── Input field ────────────────────────────────────── */
   .input-dark {
     @apply w-full px-4 py-3 rounded-xl text-white placeholder-slate-500 text-sm font-medium transition-all duration-200 outline-none;
     background: rgba(20, 27, 45, 0.8);
@@ -129,13 +313,104 @@ body {
   }
   .input-dark:focus {
     border-color: rgba(6, 182, 212, 0.6);
-    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1), inset 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1), 0 0 15px rgba(6, 182, 212, 0.08), inset 0 2px 8px rgba(0,0,0,0.3);
   }
   .input-dark::placeholder {
     color: #475569;
   }
 
-  /* Badge styles */
+  /* ── Glitch Text — DISABLED ────────────────────────── */
+  .glitch-text {
+    position: relative;
+  }
+  .glitch-text-intense {
+    /* no animation */
+  }
+
+  /* ── Scan Overlay — DISABLED ───────────────────────── */
+  .scan-overlay {
+    position: relative;
+    overflow: hidden;
+  }
+  .scan-overlay::after {
+    display: none;
+  }
+
+  /* ── Neon Underline — hover sweep ───────────────────── */
+  .neon-underline {
+    position: relative;
+    display: inline-block;
+  }
+  .neon-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1.5px;
+    background: linear-gradient(90deg, var(--cyan-400), var(--neon-cyan));
+    box-shadow: 0 0 6px rgba(0, 212, 255, 0.4);
+    transition: width 0.4s cubic-bezier(.25,.46,.45,.94);
+  }
+  .neon-underline:hover::after {
+    width: 100%;
+  }
+
+  /* ── Dot Pulse Indicator ────────────────────────────── */
+  .pulse-dot {
+    @apply w-2 h-2 rounded-full bg-cyan-400;
+    animation: dot-pulse 2s ease-in-out infinite;
+  }
+  .pulse-dot-green {
+    @apply w-2 h-2 rounded-full bg-green-400;
+    animation: dot-pulse 2s ease-in-out infinite;
+  }
+  .pulse-dot-red {
+    @apply w-2 h-2 rounded-full bg-red-400;
+    animation: dot-pulse 2s ease-in-out infinite;
+  }
+
+  /* ── Avatar Neon Ring ───────────────────────────────── */
+  .avatar-ring {
+    position: relative;
+  }
+  .avatar-ring::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    padding: 2px;
+    background: conic-gradient(from 0deg, #06B6D4, #00FFED, #0EA5E9, transparent, #06B6D4);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: ring-spin 4s linear infinite;
+    pointer-events: none;
+  }
+
+  /* ── HUD Section Label ──────────────────────────────── */
+  .hud-label {
+    @apply text-xs uppercase tracking-[0.3em] text-cyan-400/60;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hud-label::before {
+    content: '── ';
+    opacity: 0.4;
+  }
+  .hud-label::after {
+    content: ' ──';
+    opacity: 0.4;
+  }
+
+  /* ── Display Heading (Orbitron) ─────────────────────── */
+  .display-heading {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ── Badge styles (preserved) ───────────────────────── */
   .badge-cyan {
     @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold;
     background: rgba(6, 182, 212, 0.15);
@@ -230,6 +505,9 @@ body {
   }
   .data-table th {
     @apply text-left text-xs font-semibold uppercase tracking-wider text-slate-500 pb-3 border-b border-navy-700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
   }
   .data-table td {
     @apply py-3.5 text-slate-300 border-b border-navy-800;
@@ -239,7 +517,26 @@ body {
   }
   .data-table tr:hover td {
     @apply text-white;
-    background: rgba(255,255,255,0.02);
+    background: rgba(6, 182, 212, 0.03);
+  }
+
+  /* ── Marquee Banner ─────────────────────────────────── */
+  .marquee-track {
+    @apply overflow-hidden whitespace-nowrap;
+    background: linear-gradient(90deg, var(--navy-800), var(--navy-900), var(--navy-800));
+    border-top: 1px solid rgba(6, 182, 212, 0.1);
+    border-bottom: 1px solid rgba(6, 182, 212, 0.1);
+  }
+  .marquee-inner {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 25s linear infinite;
+  }
+  .marquee-item {
+    @apply flex items-center gap-4 px-8 py-3 text-sm text-slate-400;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
   }
 }
 
@@ -258,9 +555,25 @@ body {
   /* Hide scrollbar but keep functionality */
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Font utilities */
+  .font-orbitron { font-family: 'Orbitron', sans-serif; }
+  .font-mono-alt { font-family: 'JetBrains Mono', monospace; }
 }
 
 /* ── Radix UI Overrides ───────────────────────────────────── */
 [data-radix-popper-content-wrapper] {
   z-index: 100 !important;
+}
+
+/* ── Grain Overlay (subtle texture) ───────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 9990;
+  mix-blend-mode: overlay;
 }

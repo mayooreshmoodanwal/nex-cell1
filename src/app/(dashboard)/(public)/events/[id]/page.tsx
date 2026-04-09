@@ -183,8 +183,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
         {event.imageUrl && (
-          <div className="rounded-2xl overflow-hidden h-64 mb-6">
-            <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+          <div className="rounded-2xl overflow-hidden mb-6 bg-navy-900 flex items-center justify-center max-w-4xl mx-auto aspect-[1.414/1] w-full">
+            <img src={event.imageUrl} alt={event.title} className="w-full h-full object-contain" />
           </div>
         )}
 

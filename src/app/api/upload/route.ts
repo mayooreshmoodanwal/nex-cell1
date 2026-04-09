@@ -3,6 +3,19 @@ import { requireAuth } from "@/lib/auth";
 import { ok, err } from "@/lib/validations";
 import { rateLimitUpload } from "@/lib/rate-limit";
 import { v2 as cloudinary } from "cloudinary";
+import vision from "@google-cloud/vision";
+
+let visionClient: any = null;
+try {
+  if (process.env.GCP_SA_KEY_JSON) {
+    const cleanJson = process.env.GCP_SA_KEY_JSON.replace(/^'|'$/g, '');
+    visionClient = new vision.ImageAnnotatorClient({ credentials: JSON.parse(cleanJson) });
+  } else {
+    visionClient = new vision.ImageAnnotatorClient(); // Fallback
+  }
+} catch (e) {
+  console.warn("Failed to initialize Google Vision client. Image moderation is offline.", e);
+}
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -39,8 +52,37 @@ export async function POST(request: NextRequest) {
   const buffer = Buffer.from(bytes);
 
   // Allowed folders — prevent arbitrary path injection
-  const allowedFolders = ["events", "payments", "expenses", "avatars"];
+  const allowedFolders = ["events", "payments", "expenses", "avatars", "certificates"];
   const safeFolder = allowedFolders.includes(folder) ? folder : "general";
+
+  // --- Google Vision API Moderation ---
+  if (visionClient) {
+    try {
+      const [result] = await visionClient.safeSearchDetection(buffer);
+      const detections = result.safeSearchAnnotation;
+
+      if (detections) {
+        const isBad = (res: any) => 
+          res === 'LIKELY' || res === 'VERY_LIKELY' || res === 4 || res === 5;
+
+        if (
+          isBad(detections.adult) ||
+          isBad(detections.violence) ||
+          isBad(detections.racy) ||
+          isBad(detections.medical) ||
+          isBad(detections.spoof)
+        ) {
+          return err("Image was flagged by safety moderation. Please choose another image.", 400);
+        }
+      }
+    } catch (visionError: any) {
+      console.error("Google Vision API Error:", visionError.message);
+      // If the vision API fails (e.g. invalid credentials or billing not enabled), 
+      // we let the upload proceed with a warning rather than blocking the user entirely.
+      console.warn("Skipping image moderation. Please enable billing in Google Cloud.");
+    }
+  }
+  // ------------------------------------
 
   return new Promise<NextResponse>((resolve) => {
     const uploadStream = cloudinary.uploader.upload_stream(

@@ -22,7 +22,7 @@ export async function getUserById(id: string) {
   return { ...user, roles: roles.map((r) => r.role) };
 }
 
-export async function updateProfile(userId: string, data: { name?: string; phone?: string; avatarUrl?: string }) {
+export async function updateProfile(userId: string, data: { name?: string; phone?: string; avatarUrl?: string; bio?: string; linkedinUrl?: string; showInDirectory?: boolean }) {
   const [updated] = await db
     .update(users)
     .set({ ...data })
@@ -115,7 +115,7 @@ export async function setAppConfig(key: string, value: string, updatedBy: string
 
 export async function getAdminStats() {
   const [userCount] = await db.select({ count: count() }).from(users).where(eq(users.isDeleted, false));
-  const { default: { events, eventRegistrations, wallets } } = await import("@/lib/db/schema");
+  const { events, eventRegistrations, wallets } = await import("@/lib/db/schema");
   const [eventCount] = await db.select({ count: count() }).from(events).where(eq(events.isDeleted, false));
   const [regCount] = await db.select({ count: count() }).from(eventRegistrations);
 

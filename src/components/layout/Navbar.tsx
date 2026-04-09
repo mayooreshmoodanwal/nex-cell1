@@ -15,7 +15,6 @@ export default function Navbar({ user }: { user: NavbarUser }) {
   const [unreadCount,  setUnreadCount]  = useState(0);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  // Poll notification count every 30s
   useEffect(() => {
     const fetchCount = async () => {
       try {
@@ -48,20 +47,25 @@ export default function Navbar({ user }: { user: NavbarUser }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-navy-950/80 backdrop-blur-md border-b border-navy-800 flex items-center px-4 md:px-6 lg:px-8">
-      <div className="flex items-center justify-between w-full">
-        {/* Left — page breadcrumb placeholder */}
-        <div className="hidden lg:block" />
-        <div className="lg:hidden w-8" /> {/* Space for mobile menu button */}
+    <header className="sticky top-0 z-30 h-16 bg-navy-950/80 backdrop-blur-md border-b border-navy-800/60 flex items-center px-4 md:px-6 lg:px-8 relative">
+      {/* Animated gradient line at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{
+        background: "linear-gradient(90deg, transparent, rgba(6,182,212,0.3), rgba(14,165,233,0.2), transparent)",
+        backgroundSize: "200% 100%",
+        animation: "neon-rotate 4s linear infinite",
+      }} />
 
-        {/* Right — actions */}
+      <div className="flex items-center justify-between w-full">
+        <div className="hidden lg:block" />
+        <div className="lg:hidden w-8" />
+
         <div className="flex items-center gap-2 ml-auto">
           {/* Wallet quick view */}
           <Link href="/wallet"
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800 hover:bg-navy-700 border border-navy-700 transition-colors text-sm text-slate-300 hover:text-white"
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800/60 hover:bg-navy-700/60 border border-navy-700/50 hover:border-cyan-500/30 transition-all text-sm text-slate-300 hover:text-white"
           >
             <Wallet className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="text-xs font-medium">Wallet</span>
+            <span className="text-xs font-medium font-mono">Wallet</span>
           </Link>
 
           {/* Notifications */}
@@ -74,6 +78,7 @@ export default function Navbar({ user }: { user: NavbarUser }) {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-cyan-500 text-[10px] font-bold text-white flex items-center justify-center"
+                style={{ boxShadow: "0 0 8px rgba(6, 182, 212, 0.5)" }}
               >
                 {unreadCount > 9 ? "9+" : unreadCount}
               </motion.span>
@@ -84,7 +89,7 @@ export default function Navbar({ user }: { user: NavbarUser }) {
           <div className="relative">
             <button
               onClick={() => setUserMenuOpen((o) => !o)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-navy-800 border border-transparent hover:border-navy-700 transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-navy-800 border border-transparent hover:border-navy-700/60 transition-all"
             >
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                 <span className="text-xs font-bold text-white">{user.email[0].toUpperCase()}</span>
@@ -104,24 +109,24 @@ export default function Navbar({ user }: { user: NavbarUser }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-navy-900 border border-navy-700 rounded-xl shadow-glass-lg z-20 overflow-hidden"
+                    className="absolute right-0 top-full mt-2 w-52 bg-navy-900/95 backdrop-blur-md border border-navy-700/60 rounded-lg shadow-glass-lg z-20 overflow-hidden"
                   >
-                    <div className="p-3 border-b border-navy-800">
+                    <div className="p-3 border-b border-navy-800/60">
                       <p className="text-xs font-medium text-white truncate">{user.email}</p>
-                      <p className="text-xs text-slate-500 capitalize mt-0.5">
-                        {user.roles.includes("admin") ? "Admin" :
-                         user.roles.includes("treasurer") ? "Treasurer" :
-                         user.roles.includes("member") ? "Member" : "Participant"}
+                      <p className="text-[10px] text-cyan-400/50 mt-0.5 font-mono tracking-wider uppercase">
+                        {user.roles.includes("admin") ? "ADMIN" :
+                         user.roles.includes("treasurer") ? "TREASURER" :
+                         user.roles.includes("member") ? "MEMBER" : "PARTICIPANT"}
                       </p>
                     </div>
                     <div className="p-1.5">
                       <Link href="/profile" onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-navy-800 transition-colors">
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-navy-800/60 transition-colors">
                         <User className="w-4 h-4" /> Profile
                       </Link>
                       <button onClick={handleLogout}
                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors">
-                        <LogOut className="w-4 h-4" /> Sign out
+                        <LogOut className="w-4 h-4" /> Disconnect
                       </button>
                     </div>
                   </motion.div>

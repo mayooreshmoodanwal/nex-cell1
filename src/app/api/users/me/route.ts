@@ -24,7 +24,22 @@ export async function PATCH(request: NextRequest) {
   const body = await parseBody(request, UpdateProfileSchema);
   if (body instanceof Response) return body;
 
-  const updated = await updateProfile(user.id, body);
+  let updateData = { ...body };
+
+  // Only members, treasurers, and admins can set bio/linkedin/directory visibility
+  const isMemberOrAbove = user.roles?.some((r: string) => ['member', 'treasurer', 'admin'].includes(r));
+  if (!isMemberOrAbove) {
+    delete updateData.bio;
+    delete updateData.linkedinUrl;
+    delete updateData.showInDirectory;
+  }
+
+  // Auto-publish to the directory if they update their LinkedIn profile
+  if (updateData.linkedinUrl) {
+    updateData.showInDirectory = true;
+  }
+
+  const updated = await updateProfile(user.id, updateData);
   return ok(updated);
 }
 
