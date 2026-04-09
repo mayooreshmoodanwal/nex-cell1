@@ -46,7 +46,8 @@ const TREASURER_ROUTES = [
   "/api/treasurer",
 ];
 
-// Routes that require strictly "admin" role
+// Routes that require at least the "member" role  
+// (individual pages enforce admin-only within their own components)
 const ADMIN_ROUTES = [
   "/admin",
   "/api/admin",
@@ -75,8 +76,9 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 function requiresMinRole(pathname: string): "member" | "treasurer" | "admin" | null {
+  // Admin section — minimum 'member' role; individual pages enforce admin-only
   if (ADMIN_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"))) {
-    return "admin";
+    return "member";
   }
   if (TREASURER_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"))) {
     return "treasurer";

@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   let user;
   try {
     const payload = await verifyAccessToken(token);
-    if (!payload.roles?.includes("admin") && !payload.roles?.includes("treasurer")) {
+    if (!payload.roles?.includes("admin") && !payload.roles?.includes("treasurer") && !payload.roles?.includes("member")) {
       redirect("/dashboard?error=forbidden");
     }
     user = { id: payload.sub, email: payload.email, roles: payload.roles };

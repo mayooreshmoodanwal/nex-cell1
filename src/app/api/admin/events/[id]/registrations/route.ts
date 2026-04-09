@@ -54,6 +54,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     .limit(1);
   if (existing) return err("User is already registered for this event", 400);
 
+  // Get user data for denormalized fields
+  const [regUser] = await db.select({ name: users.name, phone: users.phone, email: users.email })
+    .from(users).where(eq(users.id, body.userId)).limit(1);
+
   // Add registration
   const idempotencyKey = `reg:${params.id}:${body.userId}`;
   await db.insert(eventRegistrations).values({
@@ -63,6 +67,9 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     paymentStatus:  "completed",
     amountPaidMb:   0,
     idempotencyKey,
+    name:           regUser?.name ?? null,
+    phone:          regUser?.phone ?? null,
+    email:          regUser?.email ?? null,
   });
 
   await writeAuditLog({
