@@ -16,6 +16,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -348,4 +349,25 @@ export function getDeviceHint(userAgent: string | null): string {
   if (userAgent.includes("Mobile"))  return "Mobile browser";
 
   return "Unknown browser";
+}
+
+// ─────────────────────────────────────────────────────────────
+// PASSWORD UTILITIES
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Hashes a password using bcrypt with salt rounds of 12.
+ * This provides a good balance between security and performance.
+ */
+export async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 12;
+  return bcrypt.hash(password, saltRounds);
+}
+
+/**
+ * Compares a plain text password with a hashed password.
+ * Returns true if they match, false otherwise.
+ */
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }

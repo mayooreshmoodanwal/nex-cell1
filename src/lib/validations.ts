@@ -130,6 +130,16 @@ export const PhoneSchema = z
   .length(10, "Phone number must be exactly 10 digits")
   .regex(/^\d{10}$/, "Phone number must contain only numbers");
 
+// Password validation — strong password requirements
+export const PasswordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(128, "Password must not exceed 128 characters")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
+
 export const SendOtpSchema = z.object({
   email: EmailSchema,
   name:  z.string().min(1, "Name is required").max(100).trim(),
@@ -143,6 +153,41 @@ export const VerifyOtpSchema = z.object({
   code:  OtpCodeSchema,
   name:  z.string().min(1, "Name is required").max(100).trim(),
   phone: PhoneSchema,
+});
+
+// Lookup email schema — check if user exists and has password
+export const LookupEmailSchema = z.object({
+  email: EmailSchema,
+});
+
+// Complete signup schema — new user signup with OTP + password
+export const CompleteSignupSchema = z.object({
+  email: EmailSchema,
+  name:  z.string().min(1, "Name is required").max(100).trim(),
+  phone: PhoneSchema,
+  otp: OtpCodeSchema,
+  password: PasswordSchema,
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+// Set password schema — existing user sets password
+export const SetPasswordSchema = z.object({
+  email: EmailSchema,
+  otp: OtpCodeSchema,
+  password: PasswordSchema,
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+// Login with password schema
+export const LoginPasswordSchema = z.object({
+  email: EmailSchema,
+  password: z.string().min(1, "Password is required"),
 });
 
 // ── User schemas ──────────────────────────────────────────────

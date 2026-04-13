@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight, Mail, Loader2, RefreshCw, ChevronLeft, Zap,
-  User, Phone,
+  User, Phone, Lock, Eye, EyeOff, Key,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
@@ -81,6 +81,96 @@ function OtpInput({
 }
 
 // ─────────────────────────────────────────────────────────────
+// PASSWORD INPUT COMPONENT
+// ─────────────────────────────────────────────────────────────
+
+function PasswordInput({
+  value,
+  onChange,
+  placeholder = "Enter password",
+  showStrength = false,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  showStrength?: boolean;
+}) {
+  const [show, setShow] = useState(false);
+
+  // Password strength calculation
+  const strength = {
+    score: 0,
+    label: "",
+    color: "",
+  };
+
+  if (showStrength && value) {
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (/[a-z]/.test(value)) score++;
+    if (/[A-Z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^a-zA-Z0-9]/.test(value)) score++;
+
+    strength.score = score;
+
+    if (score <= 1) {
+      strength.label = "Weak";
+      strength.color = "text-red-400";
+    } else if (score <= 3) {
+      strength.label = "Medium";
+      strength.color = "text-yellow-400";
+    } else {
+      strength.label = "Strong";
+      strength.color = "text-green-400";
+    }
+  }
+
+  return (
+    <div>
+      <div className="relative">
+        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <input
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="input-dark pl-10 pr-10"
+        />
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-cyan-400 transition-colors"
+        >
+          {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
+      {showStrength && value && (
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className={`h-1 w-8 rounded-full transition-all ${
+                  i <= strength.score
+                    ? strength.score <= 1
+                      ? "bg-red-400"
+                      : strength.score <= 3
+                      ? "bg-yellow-400"
+                      : "bg-green-400"
+                    : "bg-navy-700"
+                }`}
+              />
+            ))}
+          </div>
+          <span className={`text-xs font-mono ${strength.color}`}>{strength.label}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
 // FLOATING 3D SHAPE
 // ─────────────────────────────────────────────────────────────
 
@@ -102,20 +192,25 @@ function FloatingShape({ className, delay = 0, children }: { className?: string;
 // MAIN LOGIN PAGE
 // ─────────────────────────────────────────────────────────────
 
-type Step = "welcome" | "email" | "otp";
+type Step = "welcome" | "email" | "otp" | "signup" | "signup_otp" | "set_password" | "password_login" | "forgot_password";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [step,       setStep]       = useState<Step>("welcome");
-  const [email,      setEmail]      = useState("");
-  const [name,       setName]       = useState("");
-  const [phone,      setPhone]      = useState("");
-  const [otp,        setOtp]        = useState("");
-  const [loading,    setLoading]    = useState(false);
-  const [cooldown,   setCooldown]   = useState(0);
-  const [otpSentTo,  setOtpSentTo]  = useState("");
-  const [nameError,  setNameError]  = useState("");
-  const [phoneError, setPhoneError] = useState("");
+  const [step,           setStep]           = useState<Step>("welcome");
+  const [email,          setEmail]          = useState("");
+  const [name,           setName]           = useState("");
+  const [phone,          setPhone]          = useState("");
+  const [otp,            setOtp]            = useState("");
+  const [password,       setPassword]       = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading,       setLoading]       = useState(false);
+  const [cooldown,      setCooldown]      = useState(0);
+  const [otpSentTo,     setOtpSentTo]     = useState("");
+  const [userName,      setUserName]      = useState(""); // For welcome message
+  const [authFlow,       setAuthFlow]      = useState<"signup" | "set_password" | "password_login" | null>(null);
+  const [nameError,     setNameError]     = useState("");
+  const [phoneError,    setPhoneError]    = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -127,9 +222,37 @@ export default function LoginPage() {
     let valid = true;
     setNameError("");
     setPhoneError("");
+    setPasswordError("");
+
     if (!name.trim()) { setNameError("Full name is required"); valid = false; }
     if (!phone.trim()) { setPhoneError("Phone number is required"); valid = false; }
     else if (!/^\d{10}$/.test(phone)) { setPhoneError("Phone must be exactly 10 digits"); valid = false; }
+
+    // Password validation
+    if (password) {
+      if (password.length < 8) {
+        setPasswordError("Password must be at least 8 characters");
+        valid = false;
+      } else if (!/[a-z]/.test(password)) {
+        setPasswordError("Password must contain a lowercase letter");
+        valid = false;
+      } else if (!/[A-Z]/.test(password)) {
+        setPasswordError("Password must contain an uppercase letter");
+        valid = false;
+      } else if (!/[0-9]/.test(password)) {
+        setPasswordError("Password must contain a number");
+        valid = false;
+      } else if (!/[^a-zA-Z0-9]/.test(password)) {
+        setPasswordError("Password must contain a special character");
+        valid = false;
+      }
+    }
+
+    if (confirmPassword && password !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      valid = false;
+    }
+
     return valid;
   };
 
@@ -217,9 +340,279 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
+    // Auto-verify only for the legacy OTP step (not signup_otp or set_password)
+    if (step !== "otp") return;
     const clean = otp.replace(/\s/g, "");
     if (clean.length === 6) handleVerifyOtp(clean);
-  }, [otp]);
+  }, [otp, step]);
+
+  // ─────────────────────────────────────────────────────────
+  // HYBRID AUTH HANDLERS
+  // ─────────────────────────────────────────────────────────
+
+  const handleLookupEmail = async () => {
+    if (!email.trim()) {
+      toast.error("Please enter your email");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/lookup-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.toLowerCase().trim() }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to lookup email");
+        return;
+      }
+
+      const flow = data.data.flow;
+      setAuthFlow(flow);
+
+      if (data.data.name) {
+        setUserName(data.data.name);
+      }
+
+      if (flow === "signup") {
+        setStep("signup");
+      } else if (flow === "set_password") {
+        setStep("set_password");
+        // Automatically send OTP for existing users
+        await handleForgotPassword();
+      } else if (flow === "password_login") {
+        setStep("password_login");
+      }
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompleteSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateInputs()) return;
+
+    // Step 1: Send OTP to verify email before creating account
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase().trim(),
+          name: name.trim(),
+          phone: phone.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 429 && data.retryAfter) {
+          setCooldown(data.retryAfter);
+          toast.error(`Please wait ${data.retryAfter}s before requesting another code.`);
+        } else {
+          toast.error(data.error ?? "Failed to send verification code");
+        }
+        return;
+      }
+
+      setOtpSentTo(email.toLowerCase().trim());
+      setCooldown(60);
+      setOtp("");
+      setStep("signup_otp");
+      toast.success("Verification code sent! Check your email.");
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step 2: Verify OTP and complete signup
+  const handleVerifySignupOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanOtp = otp.replace(/\s/g, "");
+    if (cleanOtp.length < 6) {
+      toast.error("Please enter the 6-digit code");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/complete-signup", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase().trim(),
+          name: name.trim(),
+          phone: phone.trim(),
+          otp: cleanOtp,
+          password,
+          confirmPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.fields) {
+          data.fields.forEach((field: any) => {
+            if (field.path === "password") setPasswordError(field.message);
+            if (field.path === "confirmPassword") setPasswordError(field.message);
+          });
+        }
+        toast.error(data.error ?? "Signup failed");
+        return;
+      }
+
+      toast.success(data.data.message ?? "Welcome to NexCell!");
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const cleanOtp = otp.replace(/\s/g, "");
+    console.log("handleSetPassword called with:", {
+      email: email.toLowerCase().trim(),
+      otpLength: cleanOtp.length,
+      otp: cleanOtp,
+      passwordLength: password.length,
+    });
+
+    if (!cleanOtp || cleanOtp.length < 6) {
+      toast.error("Please enter the 6-digit code");
+      return;
+    }
+
+    if (!password || password !== confirmPassword) {
+      toast.error("Please enter and confirm your password");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/set-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase().trim(),
+          otp: cleanOtp,
+          password,
+          confirmPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to set password");
+        return;
+      }
+
+      toast.success(data.data.message ?? "Password set successfully!");
+      setStep("password_login");
+      setOtp("");
+      setPassword("");
+      setConfirmPassword("");
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email.trim() || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/login-password", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase().trim(),
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error ?? "Login failed");
+        return;
+      }
+
+      toast.success(data.data.message ?? "Welcome back!");
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error("Please enter your email first");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.toLowerCase().trim(),
+          name: name.trim() || userName || "User",
+          phone: phone.trim() || "1234567890",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 429 && data.retryAfter) {
+          setCooldown(data.retryAfter);
+          toast.error(`Please wait ${data.retryAfter}s before requesting another code.`);
+        } else {
+          toast.error(data.error ?? "Failed to send code");
+        }
+        return;
+      }
+
+      setOtpSentTo(email.toLowerCase().trim());
+      setCooldown(60);
+      setStep("set_password");
+      toast.success("Reset code sent! Check your email.");
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // ─────────────────────────────────────────────────────────
   // RENDER
@@ -375,47 +768,12 @@ export default function LoginPage() {
                     <Mail className="w-5 h-5 text-cyan-400" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white display-heading text-sm">Verify Identity</h2>
-                    <p className="text-xs text-slate-400 font-mono">Enter credentials → receive 6-digit code</p>
+                    <h2 className="text-lg font-bold text-white display-heading text-sm">Enter Your Email</h2>
+                    <p className="text-xs text-slate-400 font-mono">We'll check your account status</p>
                   </div>
                 </div>
 
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div>
-                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Full Name</label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => { setName(e.target.value); setNameError(""); }}
-                        placeholder="Your full name"
-                        required
-                        autoFocus
-                        className="input-dark pl-10"
-                      />
-                    </div>
-                    {nameError && <p className="text-xs text-red-400 mt-1 font-mono">{nameError}</p>}
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Phone Number</label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setPhoneError(""); }}
-                        placeholder="10-digit phone number"
-                        required
-                        inputMode="numeric"
-                        maxLength={10}
-                        className="input-dark pl-10"
-                      />
-                    </div>
-                    {phoneError && <p className="text-xs text-red-400 mt-1 font-mono">{phoneError}</p>}
-                  </div>
-
+                <form onSubmit={(e) => { e.preventDefault(); handleLookupEmail(); }} className="space-y-4">
                   <div>
                     <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Email Address</label>
                     <div className="relative">
@@ -426,6 +784,7 @@ export default function LoginPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
                         required
+                        autoFocus
                         className="input-dark pl-10"
                       />
                     </div>
@@ -433,21 +792,21 @@ export default function LoginPage() {
 
                   <button
                     type="submit"
-                    disabled={loading || !email.trim() || !name.trim() || !phone.trim()}
+                    disabled={loading || !email.trim()}
                     className="cyber-btn w-full disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="flex items-center justify-center gap-2">
                       {loading ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" /> Transmitting...</>
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Checking...</>
                       ) : (
-                        <>Send Login Code <ArrowRight className="w-4 h-4" /></>
+                        <>Continue <ArrowRight className="w-4 h-4" /></>
                       )}
                     </span>
                   </button>
                 </form>
 
                 <p className="text-[10px] text-slate-600 text-center mt-5 font-mono tracking-widest uppercase">
-                  Passwordless Authentication
+                  Hybrid Authentication (OTP + Password)
                 </p>
               </div>
             </motion.div>
@@ -515,6 +874,370 @@ export default function LoginPage() {
                 <p className="text-[10px] text-slate-600 text-center mt-5 font-mono tracking-widest uppercase">
                   Check spam folder if not received
                 </p>
+              </div>
+            </motion.div>
+          )}
+
+          {step === "signup" && (
+            <motion.div
+              key="signup"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="hud-card p-6 scan-overlay">
+                <button
+                  onClick={() => setStep("email")}
+                  className="flex items-center gap-1 text-sm text-slate-400 hover:text-cyan-400 mb-5 transition-colors neon-underline"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Back
+                </button>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25 clip-cyber-sm">
+                    <User className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white display-heading text-sm">Create Account</h2>
+                    <p className="text-xs text-slate-400 font-mono">New user? Complete your signup</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleCompleteSignup} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={(e) => { setName(e.target.value); setNameError(""); }}
+                        placeholder="Your full name"
+                        required
+                        autoFocus
+                        className="input-dark pl-10"
+                      />
+                    </div>
+                    {nameError && <p className="text-xs text-red-400 mt-1 font-mono">{nameError}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Phone Number</label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => { setPhone(e.target.value.replace(/\D/g, "").slice(0, 10)); setPhoneError(""); }}
+                        placeholder="10-digit phone number"
+                        required
+                        inputMode="numeric"
+                        maxLength={10}
+                        className="input-dark pl-10"
+                      />
+                    </div>
+                    {phoneError && <p className="text-xs text-red-400 mt-1 font-mono">{phoneError}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Password</label>
+                    <PasswordInput
+                      value={password}
+                      onChange={(v) => { setPassword(v); setPasswordError(""); }}
+                      placeholder="Create a strong password"
+                      showStrength
+                    />
+                    {passwordError && <p className="text-xs text-red-400 mt-1 font-mono">{passwordError}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Confirm Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm your password"
+                        required
+                        className="input-dark pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading || !name.trim() || !phone.trim() || !password || !confirmPassword}
+                    className="cyber-btn w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      {loading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Creating Account...</>
+                      ) : (
+                        <>Create Account <ArrowRight className="w-4 h-4" /></>
+                      )}
+                    </span>
+                  </button>
+                </form>
+
+                <p className="text-[10px] text-slate-600 text-center mt-5 font-mono tracking-widest uppercase">
+                  Password: 8+ chars, uppercase, lowercase, number, special char
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {step === "signup_otp" && (
+            <motion.div
+              key="signup_otp"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="hud-card p-6 scan-overlay">
+                <button
+                  onClick={() => { setStep("signup"); setOtp(""); }}
+                  className="flex items-center gap-1 text-sm text-slate-400 hover:text-cyan-400 mb-5 transition-colors neon-underline"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Back
+                </button>
+
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25 clip-cyber-sm">
+                    <Zap className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white display-heading text-sm">Verify Email</h2>
+                    <p className="text-xs text-slate-400 font-mono">Enter the 6-digit code sent to</p>
+                  </div>
+                </div>
+
+                <p className="text-sm font-medium text-cyan-400 mb-6 ml-14 truncate font-mono">
+                  {otpSentTo}
+                </p>
+
+                <form onSubmit={handleVerifySignupOtp} className="space-y-5">
+                  <OtpInput value={otp} onChange={setOtp} disabled={loading} />
+
+                  {loading && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex items-center justify-center gap-2 text-sm text-slate-400 font-mono"
+                    >
+                      <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+                      Creating your account...
+                    </motion.div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={loading || otp.replace(/\s/g, "").length < 6}
+                    className="cyber-btn w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      {loading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Verifying...</>
+                      ) : (
+                        <>Verify & Create Account <ArrowRight className="w-4 h-4" /></>
+                      )}
+                    </span>
+                  </button>
+                </form>
+
+                <div className="flex items-center justify-between mt-6">
+                  <p className="text-[10px] text-slate-500 font-mono">Code expires: 5min</p>
+                  {cooldown > 0 ? (
+                    <p className="text-[10px] text-slate-500 font-mono">
+                      Resend in <span className="text-cyan-400 font-medium tabular-nums">{cooldown}s</span>
+                    </p>
+                  ) : (
+                    <button
+                      onClick={handleCompleteSignup}
+                      className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors neon-underline"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Resend
+                    </button>
+                  )}
+                </div>
+
+                <p className="text-[10px] text-slate-600 text-center mt-5 font-mono tracking-widest uppercase">
+                  Check spam folder if not received
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {step === "set_password" && (
+            <motion.div
+              key="set_password"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="hud-card p-6 scan-overlay">
+                <button
+                  onClick={() => setStep("email")}
+                  className="flex items-center gap-1 text-sm text-slate-400 hover:text-cyan-400 mb-5 transition-colors neon-underline"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Back
+                </button>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25 clip-cyber-sm">
+                    <Key className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white display-heading text-sm">Set Password</h2>
+                    <p className="text-xs text-slate-400 font-mono">Enter the 6-digit code sent to your email</p>
+                  </div>
+                </div>
+
+                <p className="text-sm font-medium text-cyan-400 mb-4 ml-14 truncate font-mono">
+                  📧 {otpSentTo || email}
+                </p>
+
+                <form onSubmit={handleSetPassword} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">6-Digit Code</label>
+                    <OtpInput value={otp} onChange={setOtp} disabled={loading} />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">New Password</label>
+                    <PasswordInput
+                      value={password}
+                      onChange={(v) => { setPassword(v); setPasswordError(""); }}
+                      placeholder="Create a strong password"
+                      showStrength
+                    />
+                    {passwordError && <p className="text-xs text-red-400 mt-1 font-mono">{passwordError}</p>}
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Confirm Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Confirm your password"
+                        required
+                        className="input-dark pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading || otp.replace(/\s/g, "").length < 6 || !password || !confirmPassword}
+                    className="cyber-btn w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      {loading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Setting Password...</>
+                      ) : (
+                        <>Set Password <ArrowRight className="w-4 h-4" /></>
+                      )}
+                    </span>
+                  </button>
+                </form>
+
+                <div className="flex items-center justify-between mt-4">
+                  <p className="text-[10px] text-slate-500 font-mono">Code expires: 5min</p>
+                  {cooldown > 0 ? (
+                    <p className="text-[10px] text-slate-500 font-mono">
+                      Resend in <span className="text-cyan-400 font-medium tabular-nums">{cooldown}s</span>
+                    </p>
+                  ) : (
+                    <button
+                      onClick={handleForgotPassword}
+                      className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors neon-underline"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Resend Code
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {step === "password_login" && (
+            <motion.div
+              key="password_login"
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.98 }}
+              transition={{ duration: 0.35 }}
+            >
+              <div className="hud-card p-6 scan-overlay">
+                <button
+                  onClick={() => setStep("email")}
+                  className="flex items-center gap-1 text-sm text-slate-400 hover:text-cyan-400 mb-5 transition-colors neon-underline"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Back
+                </button>
+
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2.5 rounded-lg bg-cyan-500/15 border border-cyan-500/25 clip-cyber-sm">
+                    <Lock className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-white display-heading text-sm">Welcome Back{userName ? `, ${userName}` : ""}!</h2>
+                    <p className="text-xs text-slate-400 font-mono">Enter your password to continue</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handlePasswordLogin} className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Email</label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        className="input-dark pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-medium text-slate-400 mb-1.5 block font-mono uppercase tracking-wider text-[0.65rem]">Password</label>
+                    <PasswordInput
+                      value={password}
+                      onChange={(v) => setPassword(v)}
+                      placeholder="Enter your password"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading || !email.trim() || !password}
+                    className="cyber-btn w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      {loading ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Logging in...</>
+                      ) : (
+                        <>Login <ArrowRight className="w-4 h-4" /></>
+                      )}
+                    </span>
+                  </button>
+                </form>
+
+                <button
+                  onClick={handleForgotPassword}
+                  className="w-full text-xs text-cyan-400 hover:text-cyan-300 mt-4 transition-colors neon-underline"
+                >
+                  Forgot Password?
+                </button>
               </div>
             </motion.div>
           )}

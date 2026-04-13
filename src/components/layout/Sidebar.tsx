@@ -81,7 +81,7 @@ export default function Sidebar({ user }: { user: SidebarUser }) {
           </div>
           <div>
             <span className="text-lg font-black text-white">Nex<span className="gradient-text">Cell</span></span>
-            <p className="text-[9px] text-cyan-400/40 uppercase tracking-[0.25em] -mt-0.5 font-mono">Platform v2.0</p>
+            <p className="text-[9px] text-cyan-400/40 uppercase tracking-[0.25em] -mt-0.5 font-mono">Platform v2.0.1</p>
           </div>
         </Link>
       </div>

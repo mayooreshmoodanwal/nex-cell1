@@ -33,6 +33,7 @@
     "@react-email/components": "0.0.27",
     "@upstash/ratelimit": "2.0.5",
     "@upstash/redis": "1.34.3",
+    "bcryptjs": "^2.4.3",
     "class-variance-authority": "0.7.1",
     "cloudinary": "2.5.1",
     "clsx": "2.1.1",
@@ -56,6 +57,7 @@
   "devDependencies": {
     "@tailwindcss/forms": "0.5.10",
     "@tailwindcss/typography": "0.5.16",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "22.10.7",
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
