@@ -69,18 +69,8 @@ export default function Sidebar({ user }: { user: SidebarUser }) {
       {/* Logo */}
       <div className="p-6 border-b border-navy-800/80">
         <Link href="/dashboard" className="flex items-center gap-3 group">
-          <div className="relative">
-            <img
-              src="/logo.png"
-              alt="NexCell Logo"
-              width={36}
-              height={36}
-              className="rounded-lg relative z-10"
-            />
-            <div className="absolute inset-[-2px] rounded-lg border border-cyan-400/15 group-hover:border-cyan-400/30 transition-colors" />
-          </div>
           <div>
-            <span className="text-lg font-black text-white">Nex<span className="gradient-text">Cell</span></span>
+            <span className="text-lg font-black text-white">Vibe <span className="gradient-text">Coders</span></span>
             <p className="text-[9px] text-cyan-400/40 uppercase tracking-[0.25em] -mt-0.5 font-mono">Platform v2.0.1</p>
           </div>
         </Link>

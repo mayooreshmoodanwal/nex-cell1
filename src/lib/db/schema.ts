@@ -1,5 +1,5 @@
 /**
- * NEX-CELL DATABASE SCHEMA
+ * VIBE CODERS DATABASE SCHEMA
  * Built with Drizzle ORM for Neon (serverless PostgreSQL)
  *
  * Tables:

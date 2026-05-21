@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     {
       success:  true,
       data: {
-        message:   result.isNewUser ? "Welcome to NexCell!" : "Welcome back!",
+        message:   result.isNewUser ? "Welcome to Vibe Coders!" : "Welcome back!",
         isNewUser: result.isNewUser,
       },
     },
