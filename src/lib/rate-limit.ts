@@ -54,7 +54,7 @@ function getLimiter(key: string, requests: number, window: string): Ratelimit {
     limiters[id] = new Ratelimit({
       redis:   getRedis(),
       limiter: Ratelimit.slidingWindow(requests, window as `${number} ${"ms" | "s" | "m" | "h" | "d"}`),
-      prefix:  `vibe-coders:rl:${key}`,
+      prefix:  `nexcell:rl:${key}`,
       analytics: false, // Don't track for privacy
     });
   }

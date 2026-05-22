@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: {
-          message: "Welcome to Vibe Coders! Your account has been created.",
+          message: "Welcome to NexCell! Your account has been created.",
         },
       },
       { status: 200 }

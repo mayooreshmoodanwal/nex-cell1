@@ -70,8 +70,8 @@ export async function signAccessToken(payload: Omit<AccessTokenPayload, "type">)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiry)
-    .setIssuer("vibe-coders")
-    .setAudience("vibe-coders-client")
+    .setIssuer("nexcell")
+    .setAudience("nexcell-client")
     .sign(secret);
 }
 
@@ -90,7 +90,7 @@ export async function signRefreshToken(userId: string): Promise<{ token: string;
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiry)
-    .setIssuer("vibe-coders")
+    .setIssuer("nexcell")
     .sign(secret);
 
   return { token, jti };
@@ -103,8 +103,8 @@ export async function signRefreshToken(userId: string): Promise<{ token: string;
 export async function verifyAccessToken(token: string): Promise<AccessTokenPayload> {
   const secret = getSecret("JWT_ACCESS_SECRET");
   const { payload } = await jwtVerify(token, secret, {
-    issuer:   "vibe-coders",
-    audience: "vibe-coders-client",
+    issuer:   "nexcell",
+    audience: "nexcell-client",
   });
   return payload as unknown as AccessTokenPayload;
 }
@@ -112,7 +112,7 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
 export async function verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
   const secret = getSecret("JWT_REFRESH_SECRET");
   const { payload } = await jwtVerify(token, secret, {
-    issuer: "vibe-coders",
+    issuer: "nexcell",
   });
   return payload as unknown as RefreshTokenPayload;
 }

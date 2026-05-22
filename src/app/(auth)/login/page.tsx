@@ -329,7 +329,7 @@ export default function LoginPage() {
         return;
       }
 
-      toast.success(data.data?.message ?? "Welcome to Vibe Coders!");
+      toast.success(data.data?.message ?? "Welcome to NexCell!");
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -473,7 +473,7 @@ export default function LoginPage() {
         return;
       }
 
-      toast.success(data.data.message ?? "Welcome to Vibe Coders!");
+      toast.success(data.data.message ?? "Welcome to NexCell!");
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -691,13 +691,26 @@ export default function LoginPage() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="text-center mb-10"
         >
-          <div className="flex flex-col items-center justify-center gap-2 mb-4">
-            <h1 className="text-4xl font-black tracking-tight text-white leading-none">
-              Vibe <span className="gradient-text">Coders</span>
-            </h1>
-            <p className="text-[10px] font-medium text-cyan-400/60 uppercase tracking-[0.2em] mt-1 font-mono">
-              VC Cell Hub
-            </p>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="relative">
+              <img
+                src="/logo.png"
+                alt="NexCell Logo"
+                width={56}
+                height={56}
+                className="rounded-xl relative z-10"
+              />
+              {/* Logo glow ring */}
+              <div className="absolute inset-[-4px] rounded-xl border border-cyan-400/20" style={{ animation: "hud-breathe 3s ease-in-out infinite" }} />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white leading-none">
+                Nex<span className="gradient-text">Cell</span>
+              </h1>
+              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-[0.2em] mt-0.5 font-mono">
+                Entrepreneurship Hub
+              </p>
+            </div>
           </div>
           <p className="text-sm text-slate-500 font-mono text-[0.7rem] tracking-wider">
             ── Mirai School of Technology ──
@@ -716,7 +729,7 @@ export default function LoginPage() {
             >
               <div className="hud-card p-8 text-center scan-overlay">
                 <h2 className="text-2xl font-bold text-white mb-2 display-heading text-lg">
-                  Welcome to <span className="gradient-text">Vibe Coders</span>
+                  Welcome to <span className="gradient-text">NexCell</span>
                 </h2>
                 <p className="text-sm text-slate-400 mb-8 font-mono text-xs">
                   Login to access your dashboard
@@ -1237,7 +1250,7 @@ export default function LoginPage() {
           transition={{ delay: 0.5 }}
           className="text-center text-[10px] text-slate-600 mt-6 font-mono tracking-[0.15em] uppercase"
         >
-          © 2025 Vibe Coders · Mirai School of Technology
+          © 2025 NexCell · Mirai School of Technology
         </motion.p>
       </div>
     </div>

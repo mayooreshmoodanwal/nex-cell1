@@ -23,16 +23,16 @@ export function OtpEmailTemplate({ otp, email, expiresAt, ipAddress }: OtpEmailP
   return (
     <Html>
       <Head />
-      <Preview>Your Vibe Coders login code: {otp} (expires in 5 minutes)</Preview>
+      <Preview>Your NexCell login code: {otp} (expires in 5 minutes)</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
 
           {/* Header */}
           <Section style={styles.header}>
             <Heading style={styles.logo}>
-              Vibe <span style={{ color: "#06B6D4" }}>Coders</span>
+              Nex<span style={{ color: "#06B6D4" }}>Cell</span>
             </Heading>
-            <Text style={styles.tagline}>VC Cell · Mirai School of Technology</Text>
+            <Text style={styles.tagline}>Entrepreneurship Club · Mirai School of Technology</Text>
           </Section>
 
           <Hr style={styles.divider} />
@@ -41,7 +41,7 @@ export function OtpEmailTemplate({ otp, email, expiresAt, ipAddress }: OtpEmailP
           <Section style={styles.content}>
             <Text style={styles.greeting}>Your login code</Text>
             <Text style={styles.instruction}>
-              Enter this code on the Vibe Coders login page to sign in.
+              Enter this code on the NexCell login page to sign in.
               Do not share this code with anyone.
             </Text>
 
@@ -84,10 +84,10 @@ export function OtpEmailTemplate({ otp, email, expiresAt, ipAddress }: OtpEmailP
           {/* Footer */}
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              Vibe Coders — VC Cell of Mirai School of Technology
+              NexCell — Entrepreneurship Club of Mirai School of Technology
             </Text>
             <Text style={styles.footerText}>
-              vibecoders.mirai@gmail.com · Instagram: @vibecoders.mirai
+              nexcell.mirai@gmail.com · Instagram: @nexcell.mirai
             </Text>
           </Section>
 

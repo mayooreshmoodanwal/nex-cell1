@@ -18,22 +18,22 @@ const orbitron = Orbitron({
 
 export const metadata: Metadata = {
   title: {
-    default:  "Vibe Coders — Where Founders Are Made",
-    template: "%s | Vibe Coders",
+    default:  "NexCell — Where Founders Are Made",
+    template: "%s | NexCell",
   },
   description:
-    "Vibe Coders is the VC Cell of Mirai School of Technology. Build ventures, earn Mirai Bucks, and connect with fellow founders.",
-  keywords:  ["vc cell", "startup", "club", "Mirai", "Vibe Coders", "founders"],
-  authors:   [{ name: "Vibe Coders" }],
+    "NexCell is the Entrepreneurship Club of Mirai School of Technology. Build ventures, earn Mirai Bucks, and connect with fellow founders.",
+  keywords:  ["entrepreneurship", "startup", "club", "Mirai", "NexCell", "founders"],
+  authors:   [{ name: "NexCell" }],
   openGraph: {
     type:        "website",
-    siteName:    "Vibe Coders",
-    title:       "Vibe Coders — Where Founders Are Made",
-    description: "VC Cell of Mirai School of Technology",
+    siteName:    "NexCell",
+    title:       "NexCell — Where Founders Are Made",
+    description: "Entrepreneurship Club of Mirai School of Technology",
   },
   twitter: {
     card:  "summary_large_image",
-    title: "Vibe Coders — Where Founders Are Made",
+    title: "NexCell — Where Founders Are Made",
   },
   robots: {
     index:  true,
