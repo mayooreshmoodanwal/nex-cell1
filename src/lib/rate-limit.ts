@@ -54,7 +54,7 @@ function getLimiter(key: string, requests: number, window: string): Ratelimit {
     limiters[id] = new Ratelimit({
       redis:   getRedis(),
       limiter: Ratelimit.slidingWindow(requests, window as `${number} ${"ms" | "s" | "m" | "h" | "d"}`),
-      prefix:  `nexcell:rl:${key}`,
+      prefix:  `vibe-coders:rl:${key}`,
       analytics: false, // Don't track for privacy
     });
   }
@@ -113,6 +113,22 @@ export async function rateLimitOtpSend(request: NextRequest): Promise<RateLimitR
 export async function rateLimitOtpVerify(request: NextRequest): Promise<RateLimitResult> {
   const ip = getClientIp(request);
   const limiter = getLimiter("otp-verify", 10, "60 s");
+  const result = await limiter.limit(ip);
+  return {
+    success:   result.success,
+    limit:     result.limit,
+    remaining: result.remaining,
+    reset:     result.reset,
+  };
+}
+
+/**
+ * Password login — strict: 5 per minute per IP.
+ * Prevents brute-forcing passwords.
+ */
+export async function rateLimitPasswordLogin(request: NextRequest): Promise<RateLimitResult> {
+  const ip = getClientIp(request);
+  const limiter = getLimiter("password-login", 5, "60 s");
   const result = await limiter.limit(ip);
   return {
     success:   result.success,

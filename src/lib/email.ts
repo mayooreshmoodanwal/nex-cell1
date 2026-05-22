@@ -34,7 +34,7 @@ function getResend(): Resend {
 }
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "onboarding@resend.dev";
-const FROM_NAME  = process.env.RESEND_FROM_NAME  ?? "NexCell";
+const FROM_NAME  = process.env.RESEND_FROM_NAME  ?? "Vibe Coders";
 const FROM       = `${FROM_NAME} <${FROM_EMAIL}>`;
 
 // ─────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export async function sendOtpEmail(params: {
     const { data, error } = await resend.emails.send({
       from:    FROM,
       to:      params.to,
-      subject: `${params.otp} is your NexCell login code`,
+      subject: `${params.otp} is your Vibe Coders login code`,
       react:   OtpEmailTemplate({
         otp:       params.otp,
         email:     params.to,
@@ -99,7 +99,7 @@ export async function sendWelcomeEmail(params: {
     const { data, error } = await resend.emails.send({
       from:    FROM,
       to:      params.to,
-      subject: `Welcome to NexCell — Where Founders Are Made`,
+      subject: `Welcome to Vibe Coders — Where Founders Are Made`,
       react:   WelcomeEmailTemplate({
         name:  params.name || "there",
         email: params.to,
@@ -134,7 +134,7 @@ export async function sendWalletCreditEmail(params: {
     const { data, error } = await resend.emails.send({
       from:    FROM,
       to:      params.to,
-      subject: `Your NexCell wallet was credited ₥${params.amountMb.toLocaleString()}`,
+      subject: `Your Vibe Coders wallet was credited ₥${params.amountMb.toLocaleString()}`,
       react:   WalletCreditEmailTemplate(params),
     });
 
@@ -211,11 +211,11 @@ export async function sendPaymentStatusEmail(params: {
           </h2>
           <p>Hi ${params.name || "there"},</p>
           ${params.status === "approved"
-            ? `<p>Your payment of ₹${params.amountInr} has been verified and <strong style="color: #06B6D4">₥${params.amountMb?.toLocaleString()}</strong> has been credited to your NexCell wallet.</p>`
+            ? `<p>Your payment of ₹${params.amountInr} has been verified and <strong style="color: #06B6D4">₥${params.amountMb?.toLocaleString()}</strong> has been credited to your Vibe Coders wallet.</p>`
             : `<p>Your payment request of ₹${params.amountInr} was not approved.${params.reason ? `<br><br>Reason: ${params.reason}` : ""}</p>`
           }
-          <p>Questions? Contact us at nexcell.mirai@gmail.com</p>
-          <p style="color: #888; font-size: 12px; margin-top: 32px;">NexCell — Entrepreneurship Club of Mirai School of Technology</p>
+          <p>Questions? Contact us at vibecoders.mirai@gmail.com</p>
+          <p style="color: #888; font-size: 12px; margin-top: 32px;">Vibe Coders — VC Cell of Mirai School of Technology</p>
         </div>
       `,
     });

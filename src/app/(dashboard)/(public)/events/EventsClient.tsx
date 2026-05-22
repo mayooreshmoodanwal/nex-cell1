@@ -27,7 +27,7 @@ export default function EventsClient({ events, canCreate }: { events: any[]; can
         <div>
           <p className="hud-label mb-2">Events</p>
           <h1 className="display-heading text-xl text-white glitch-text">Nexus Events</h1>
-          <p className="text-slate-500 mt-1 text-sm font-mono">Discover and register for upcoming NexCell events</p>
+          <p className="text-slate-500 mt-1 text-sm font-mono">Discover and register for upcoming Vibe Coders events</p>
         </div>
         {canCreate && (
           <Link href="/events/create">

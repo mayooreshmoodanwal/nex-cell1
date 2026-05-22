@@ -28,6 +28,7 @@ import { createOtp, verifyOtp, getOtpCooldown } from "@/lib/otp";
 import {
   signAccessToken, signRefreshToken, hashToken,
   generateCsrfToken, getDeviceHint,
+  hashPassword, comparePassword,
 } from "@/lib/auth";
 import {
   sendOtpEmail, sendWelcomeEmail,
@@ -367,4 +368,304 @@ async function assignPredefinedRoles(userId: string, email: string): Promise<voi
       newValue:   { role: entry.role, reason: "predefined_role_on_first_login" },
     });
   }
+}
+
+// ─────────────────────────────────────────────────────────────
+// COMPLETE SIGNUP (NEW USER WITH PASSWORD)
+// ─────────────────────────────────────────────────────────────
+
+export interface CompleteSignupResult {
+  success:      boolean;
+  accessToken?:  string;
+  refreshToken?: string;
+  csrfToken?:    string;
+  error?:       string;
+}
+
+export async function completeSignup(
+  email:     string,
+  name:      string,
+  phone:     string,
+  otp:       string,
+  password:  string,
+  request:   NextRequest,
+): Promise<CompleteSignupResult> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const ipAddress = getClientIp(request);
+  const userAgent = request.headers.get("user-agent") ?? undefined;
+
+  // 1. Check if user already exists (before spending the OTP)
+  const existingUser = await db.query.users.findFirst({
+    where: eq(users.email, normalizedEmail),
+  });
+
+  if (existingUser) {
+    return { success: false, error: "An account with this email already exists" };
+  }
+
+  // 2. Verify OTP — email must be verified before account creation
+  const otpResult = await verifyOtp(normalizedEmail, otp);
+  if (!otpResult.success) {
+    const reasonMessages: Record<string, string> = {
+      not_found:    "No active code found. Please request a new one.",
+      expired:      "This code has expired. Please request a new one.",
+      used:         "This code has already been used. Please request a new one.",
+      max_attempts: "Too many incorrect attempts. Please request a new code.",
+      invalid:      "Incorrect code. Please try again.",
+    };
+    return { success: false, error: reasonMessages[otpResult.reason] ?? "Invalid code." };
+  }
+
+  // 2. Hash password
+  const passwordHash = await hashPassword(password);
+
+  // 3. Create user with password
+  const [newUser] = await db
+    .insert(users)
+    .values({
+      email: normalizedEmail,
+      name,
+      phone,
+      passwordHash,
+    })
+    .returning();
+
+  // 4. Create wallet with zero balance
+  await db.insert(wallets).values({ userId: newUser.id, balanceMb: 0 });
+
+  // 5. Check predefined_roles and assign if matched
+  await assignPredefinedRoles(newUser.id, normalizedEmail);
+
+  // 6. Load active roles
+  const activeRoleRecords = await db
+    .select({ role: userRoles.role })
+    .from(userRoles)
+    .where(and(eq(userRoles.userId, newUser.id), isNull(userRoles.revokedAt)));
+
+  const roles = activeRoleRecords.map((r) => r.role);
+
+  // Ensure everyone has at least participant role
+  if (roles.length === 0) {
+    await db.insert(userRoles).values({
+      userId:     newUser.id,
+      role:       "participant",
+      assignedBy: null,
+    }).onConflictDoNothing();
+    roles.push("participant");
+  }
+
+  // 7. Issue tokens
+  const accessToken = await signAccessToken({
+    sub:   newUser.id,
+    email: normalizedEmail,
+    roles,
+  });
+
+  const { token: refreshToken, jti } = await signRefreshToken(newUser.id);
+  const csrfToken = generateCsrfToken();
+
+  // 8. Store hashed refresh token in DB
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await db.insert(refreshTokens).values({
+    userId:     newUser.id,
+    tokenHash:  hashToken(refreshToken),
+    expiresAt,
+    deviceHint: getDeviceHint(userAgent ?? null),
+    ipAddress,
+  });
+
+  // 9. Send welcome email (fire and forget)
+  sendWelcomeEmail({ to: normalizedEmail, name }).catch(() => {});
+
+  // 10. Audit
+  await writeAuditLog({
+    actorId:    newUser.id,
+    action:     AUDIT_ACTIONS.USER_CREATED,
+    entityType: "user",
+    entityId:   newUser.id,
+    newValue:   { email: normalizedEmail, hasPassword: true },
+    ipAddress,
+    userAgent,
+  });
+
+  return {
+    success:      true,
+    accessToken,
+    refreshToken,
+    csrfToken,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────
+// SET PASSWORD (EXISTING USER WITHOUT PASSWORD)
+// ─────────────────────────────────────────────────────────────
+
+export interface SetPasswordResult {
+  success: boolean;
+  error?:  string;
+}
+
+export async function setPassword(
+  email:    string,
+  otp:      string,
+  password: string,
+  request:  NextRequest,
+): Promise<SetPasswordResult> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const ipAddress = getClientIp(request);
+  const userAgent = request.headers.get("user-agent") ?? undefined;
+
+  console.log("setPassword called with:", { email: normalizedEmail, otp: otp.length ? "****" : "empty" });
+
+  // 1. Verify OTP
+  const otpResult = await verifyOtp(normalizedEmail, otp);
+  console.log("OTP verification result:", otpResult);
+
+  if (!otpResult.success) {
+    const reasonMessages: Record<string, string> = {
+      not_found:    "No active code found. Please request a new one.",
+      expired:      "This code has expired. Please request a new one.",
+      used:         "This code has already been used. Please request a new one.",
+      max_attempts: "Too many incorrect attempts. Please request a new code.",
+      invalid:      "Incorrect code. Please try again.",
+    };
+    console.log("OTP failed with reason:", otpResult.reason);
+    return { success: false, error: reasonMessages[otpResult.reason] ?? "Invalid code." };
+  }
+
+  // 2. Find user
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, normalizedEmail),
+  });
+
+  if (!user) {
+    return { success: false, error: "User not found" };
+  }
+
+  // 3. Hash and set password
+  const passwordHash = await hashPassword(password);
+  await db
+    .update(users)
+    .set({ passwordHash })
+    .where(eq(users.id, user.id));
+
+  console.log("Password hash updated for user:", user.id);
+
+  // 5. Audit
+  await writeAuditLog({
+    actorId:    user.id,
+    action:     AUDIT_ACTIONS.USER_LOGIN, // Reusing as password set event
+    entityType: "user",
+    entityId:   user.id,
+    metadata:   { action: "password_set" },
+    ipAddress,
+    userAgent,
+  });
+
+  return { success: true };
+}
+
+// ─────────────────────────────────────────────────────────────
+// LOGIN WITH PASSWORD
+// ─────────────────────────────────────────────────────────────
+
+export interface LoginPasswordResult {
+  success:      boolean;
+  accessToken?:  string;
+  refreshToken?: string;
+  csrfToken?:    string;
+  error?:       string;
+}
+
+export async function loginWithPassword(
+  email:    string,
+  password: string,
+  request:  NextRequest,
+): Promise<LoginPasswordResult> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const ipAddress = getClientIp(request);
+  const userAgent = request.headers.get("user-agent") ?? undefined;
+
+  // 1. Find user
+  const user = await db.query.users.findFirst({
+    where: eq(users.email, normalizedEmail),
+  });
+
+  if (!user) {
+    // Don't reveal if user exists
+    return { success: false, error: "Invalid email or password" };
+  }
+
+  // 2. Check if user has a password
+  if (!user.passwordHash) {
+    return { success: false, error: "Please set up a password first" };
+  }
+
+  // 3. Verify password
+  const isPasswordValid = await comparePassword(password, user.passwordHash);
+  if (!isPasswordValid) {
+    return { success: false, error: "Invalid email or password" };
+  }
+
+  // 4. Update last login
+  await db
+    .update(users)
+    .set({ lastLoginAt: new Date() })
+    .where(eq(users.id, user.id));
+
+  // 5. Load active roles
+  const activeRoleRecords = await db
+    .select({ role: userRoles.role })
+    .from(userRoles)
+    .where(and(eq(userRoles.userId, user.id), isNull(userRoles.revokedAt)));
+
+  const roles = activeRoleRecords.map((r) => r.role);
+
+  // Ensure everyone has at least participant role
+  if (roles.length === 0) {
+    await db.insert(userRoles).values({
+      userId:     user.id,
+      role:       "participant",
+      assignedBy: null,
+    }).onConflictDoNothing();
+    roles.push("participant");
+  }
+
+  // 6. Issue tokens
+  const accessToken = await signAccessToken({
+    sub:   user.id,
+    email: normalizedEmail,
+    roles,
+  });
+
+  const { token: refreshToken } = await signRefreshToken(user.id);
+  const csrfToken = generateCsrfToken();
+
+  // 7. Store hashed refresh token in DB
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await db.insert(refreshTokens).values({
+    userId:     user.id,
+    tokenHash:  hashToken(refreshToken),
+    expiresAt,
+    deviceHint: getDeviceHint(userAgent ?? null),
+    ipAddress,
+  });
+
+  // 8. Audit login
+  await writeAuditLog({
+    actorId:    user.id,
+    action:     AUDIT_ACTIONS.USER_LOGIN,
+    entityType: "user",
+    entityId:   user.id,
+    metadata:   { method: "password" },
+    ipAddress,
+    userAgent,
+  });
+
+  return {
+    success:      true,
+    accessToken,
+    refreshToken,
+    csrfToken,
+  };
 }

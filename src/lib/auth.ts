@@ -16,6 +16,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 // ─────────────────────────────────────────────────────────────
 // TYPES
@@ -69,8 +70,8 @@ export async function signAccessToken(payload: Omit<AccessTokenPayload, "type">)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiry)
-    .setIssuer("nexcell")
-    .setAudience("nexcell-client")
+    .setIssuer("vibe-coders")
+    .setAudience("vibe-coders-client")
     .sign(secret);
 }
 
@@ -89,7 +90,7 @@ export async function signRefreshToken(userId: string): Promise<{ token: string;
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiry)
-    .setIssuer("nexcell")
+    .setIssuer("vibe-coders")
     .sign(secret);
 
   return { token, jti };
@@ -102,8 +103,8 @@ export async function signRefreshToken(userId: string): Promise<{ token: string;
 export async function verifyAccessToken(token: string): Promise<AccessTokenPayload> {
   const secret = getSecret("JWT_ACCESS_SECRET");
   const { payload } = await jwtVerify(token, secret, {
-    issuer:   "nexcell",
-    audience: "nexcell-client",
+    issuer:   "vibe-coders",
+    audience: "vibe-coders-client",
   });
   return payload as unknown as AccessTokenPayload;
 }
@@ -111,7 +112,7 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
 export async function verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
   const secret = getSecret("JWT_REFRESH_SECRET");
   const { payload } = await jwtVerify(token, secret, {
-    issuer: "nexcell",
+    issuer: "vibe-coders",
   });
   return payload as unknown as RefreshTokenPayload;
 }
@@ -348,4 +349,25 @@ export function getDeviceHint(userAgent: string | null): string {
   if (userAgent.includes("Mobile"))  return "Mobile browser";
 
   return "Unknown browser";
+}
+
+// ─────────────────────────────────────────────────────────────
+// PASSWORD UTILITIES
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Hashes a password using bcrypt with salt rounds of 12.
+ * This provides a good balance between security and performance.
+ */
+export async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 12;
+  return bcrypt.hash(password, saltRounds);
+}
+
+/**
+ * Compares a plain text password with a hashed password.
+ * Returns true if they match, false otherwise.
+ */
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
 }

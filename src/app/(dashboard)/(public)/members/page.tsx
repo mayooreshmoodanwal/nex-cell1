@@ -63,7 +63,7 @@ export default function MembersDirectoryPage() {
           Our <span className="gradient-text">Members</span>
         </h1>
         <p className="text-slate-500 text-sm max-w-2xl mx-auto font-mono">
-          The team driving innovation at NexCell · Mirai School of Technology
+          The team driving innovation at Vibe Coders · Mirai School of Technology
         </p>
       </div>
 
@@ -118,7 +118,7 @@ export default function MembersDirectoryPage() {
                 {/* Bio block */}
                 <div className="p-5 mt-3 bg-navy-950/30 flex-grow relative border-t border-navy-800/50">
                   <p className="text-sm text-slate-400 leading-relaxed pr-10 line-clamp-3">
-                    {member.bio || "A member of the NexCell community."}
+                    {member.bio || "A member of the Vibe Coders community."}
                   </p>
                   
                   {member.linkedinUrl && (

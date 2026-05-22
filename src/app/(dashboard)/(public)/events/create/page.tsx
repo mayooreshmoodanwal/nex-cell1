@@ -96,7 +96,7 @@ export default function CreateEventPage() {
           <div>
             <label className="text-xs font-medium text-slate-400 mb-1.5 block">Event title *</label>
             <input value={form.title} onChange={set("title")} required minLength={3} maxLength={200}
-              placeholder="e.g. NexCell Hackathon 2025" className="input-dark" />
+              placeholder="e.g. Vibe Coders Hackathon 2026" className="input-dark" />
           </div>
 
           {/* Short description */}
