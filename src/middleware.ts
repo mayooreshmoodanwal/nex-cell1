@@ -24,10 +24,6 @@ const PUBLIC_ROUTES = [
   "/api/auth/send-otp",
   "/api/auth/verify-otp",
   "/api/auth/refresh",
-  "/api/auth/lookup-email",
-  "/api/auth/complete-signup",
-  "/api/auth/set-password",
-  "/api/auth/login-password",
   // Public event browsing — anyone can view events and event details
   "/events",
   "/archive",
@@ -127,14 +123,7 @@ function verifyCsrf(request: NextRequest): boolean {
 
   // Auth routes that create the session are exempt (no cookie yet)
   const path = request.nextUrl.pathname;
-  if (
-    path === "/api/auth/send-otp" ||
-    path === "/api/auth/verify-otp" ||
-    path === "/api/auth/lookup-email" ||
-    path === "/api/auth/complete-signup" ||
-    path === "/api/auth/set-password" ||
-    path === "/api/auth/login-password"
-  ) return true;
+  if (path === "/api/auth/send-otp" || path === "/api/auth/verify-otp") return true;
 
   const csrfCookie = request.cookies.get("csrf_token")?.value;
   const csrfHeader = request.headers.get("x-csrf-token");

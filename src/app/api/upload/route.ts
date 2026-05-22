@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
   return new Promise<NextResponse>((resolve) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder:         `vibecoders/${safeFolder}`,
+        folder:         `nexcell/${safeFolder}`,
         resource_type:  "image",
         allowed_formats: ["jpg", "png", "webp", "gif"],
         transformation: [{ quality: "auto", fetch_format: "auto" }],

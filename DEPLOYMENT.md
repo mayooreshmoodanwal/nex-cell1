@@ -1,4 +1,4 @@
-# Vibe Coders — Deployment Guide
+# NexCell — Deployment Guide
 
 Complete step-by-step guide to go from zero to a live production deployment.
 Estimated time: **25–35 minutes** (first time), **5 minutes** (subsequent deploys).
@@ -25,16 +25,16 @@ Also install locally:
 
 ```bash
 # 1. Go to github.com → New repository
-#    Name: vibe-coders
+#    Name: nex-cell
 #    Visibility: Private (recommended)
 #    Do NOT initialise with README
 
 # 2. In your project folder:
 git init
 git add .
-git commit -m "Initial commit — Vibe Coders platform"
+git commit -m "Initial commit — NexCell platform"
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/vibe-coders.git
+git remote add origin https://github.com/YOUR_USERNAME/nex-cell.git
 git push -u origin main
 ```
 
@@ -43,13 +43,13 @@ git push -u origin main
 ## Step 2 — Set up Neon (PostgreSQL database)
 
 1. Go to [neon.tech](https://neon.tech) → Sign up → **Create a project**
-2. Project name: `vibecoders`
+2. Project name: `nexcell`
 3. Region: **Asia Pacific (Singapore)** — closest to India
 4. After creation, go to **Connection Details**
 5. Select **"Pooled connection"** from the dropdown
 6. Copy the connection string — it looks like:
    ```
-   postgresql://ayush:xxxx@ep-xxx.ap-southeast-1.aws.neon.tech/vibecoders?sslmode=require
+   postgresql://ayush:xxxx@ep-xxx.ap-southeast-1.aws.neon.tech/nexcell?sslmode=require
    ```
 7. Save this — it's your `DATABASE_URL`
 
@@ -58,7 +58,7 @@ git push -u origin main
 ## Step 3 — Set up Upstash (Redis for rate limiting)
 
 1. Go to [console.upstash.com](https://console.upstash.com) → Sign up → **Create Database**
-2. Name: `vibecoders-ratelimit`
+2. Name: `nexcell-ratelimit`
 3. Region: **AP-South-1** (Mumbai) or **AP-Southeast-1** (Singapore)
 4. Type: **Regional** (not Global — cheaper for your use case)
 5. After creation, go to **REST API** tab
@@ -72,7 +72,7 @@ git push -u origin main
 
 1. Go to [resend.com](https://resend.com) → Sign up
 2. Go to **API Keys** → **Create API Key**
-   - Name: `vibecoders-production`
+   - Name: `nexcell-production`
    - Permission: **Full Access**
 3. Copy the key — starts with `re_`
 4. Save as `RESEND_API_KEY`
@@ -98,9 +98,9 @@ git push -u origin main
    - **API Secret** → `CLOUDINARY_API_SECRET`
 3. Go to **Settings → Upload → Upload presets**
 4. Click **Add upload preset**:
-   - Preset name: `vibecoders_uploads`
+   - Preset name: `nexcell_uploads`
    - Signing mode: **Signed**
-   - Folder: `vibecoders`
+   - Folder: `nexcell`
    - Save
 
 ---
@@ -172,7 +172,7 @@ Expected output from seed:
    ✓ treasurer    → ayushkrsingh170708@gmail.com
 
 ⚙️  Seeding app config...
-   - app_name     = Vibe Coders
+   ✓ app_name     = NexCell
    ✓ app_tagline  = Where Founders Are Made
    ... (13 config values)
 
@@ -190,7 +190,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000)
 
 **Test checklist:**
-- [ ] Login page loads with Vibe Coders header
+- [ ] Login page loads with NexCell logo
 - [ ] Enter `ayushsingh1772004@gmail.com` → request OTP
 - [ ] Check email for OTP (goes to your Resend account email in test mode)
 - [ ] Enter OTP → redirected to dashboard
@@ -206,7 +206,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 1. Go to [vercel.com](https://vercel.com) → Sign up with GitHub
 2. Click **Add New Project**
-3. Import your `vibe-coders` repository
+3. Import your `nex-cell` repository
 4. Framework: **Next.js** (auto-detected)
 5. Root directory: **./** (default)
 6. Build command: `npm run build` (default)
@@ -226,13 +226,13 @@ Before clicking Deploy, go to **Environment Variables** and add ALL of these:
 | `UPSTASH_REDIS_REST_TOKEN` | Your Upstash token |
 | `RESEND_API_KEY` | Your Resend API key |
 | `RESEND_FROM_EMAIL` | `onboarding@resend.dev` |
-| `RESEND_FROM_NAME` | `Vibe Coders` |
+| `RESEND_FROM_NAME` | `NexCell` |
 | `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Your Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Your Cloudinary API secret |
-| `CLOUDINARY_UPLOAD_PRESET` | `vibecoders_uploads` |
+| `CLOUDINARY_UPLOAD_PRESET` | `nexcell_uploads` |
 | `NEXT_PUBLIC_APP_URL` | `https://your-project.vercel.app` (fill after deploy) |
-| `NEXT_PUBLIC_APP_NAME` | `Vibe Coders` |
+| `NEXT_PUBLIC_APP_NAME` | `NexCell` |
 
 > Set all variables for **Production**, **Preview**, and **Development** environments.
 
@@ -242,10 +242,10 @@ Click **Deploy**. First deploy takes 3–5 minutes.
 
 ### 10d — Update APP_URL
 
-1. After deployment, copy your Vercel URL (e.g. `https://vibe-coders-xyz.vercel.app`) and:
-2. Go to Vercel → Project → Settings → Environment Variables
-3. Update `NEXT_PUBLIC_APP_URL` to your Vercel URL
-4. Redeploy: Vercel Dashboard → Deployments → ⋯ → Redeploy
+After deployment, copy your Vercel URL (e.g. `https://nex-cell-xyz.vercel.app`) and:
+1. Go to Vercel → Project → Settings → Environment Variables
+2. Update `NEXT_PUBLIC_APP_URL` to your Vercel URL
+3. Redeploy: Vercel Dashboard → Deployments → ⋯ → Redeploy
 
 ---
 
@@ -312,7 +312,7 @@ VALUES (gen_random_uuid(), 'newperson@email.com', 'member', 'New committee membe
 ## Upgrading to a custom domain (recommended)
 
 1. Buy a domain from GoDaddy or Namecheap (~₹800/year for `.in` or ~₹1200/year for `.com`)
-   - Suggested: `vibecoders.in` or `vibecodersmirai.com`
+   - Suggested: `nexcell.in` or `nexcellmirai.com`
 2. Vercel → Project → Settings → Domains → Add your domain
 3. Add the DNS records Vercel shows you (takes 5–30 minutes to propagate)
 4. Also add this domain to Resend:
@@ -353,6 +353,6 @@ You only pay when you grow beyond these limits — and by then you'll have budge
 
 ## Support
 
-- Vibe Coders contact: vibecoders.mirai@gmail.com
-- Instagram: [@vibecoders.mirai](https://instagram.com/vibecoders.mirai)
+- NexCell contact: nexcell.mirai@gmail.com
+- Instagram: [@nexcell.mirai](https://instagram.com/nexcell.mirai)
 - Raise an issue on GitHub for bugs

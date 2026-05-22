@@ -62,7 +62,7 @@ async function seed() {
   const configSeeds = [
     {
       key:         "app_name",
-      value:       "Vibe Coders",
+      value:       "NexCell",
       description: "The name of the club platform",
     },
     {
@@ -72,12 +72,12 @@ async function seed() {
     },
     {
       key:         "contact_email",
-      value:       "vibecoders.mirai@gmail.com",
+      value:       "nexcell.mirai@gmail.com",
       description: "Public contact email shown on the site",
     },
     {
       key:         "instagram_handle",
-      value:       "vibecoders.mirai",
+      value:       "nexcell.mirai",
       description: "Instagram handle (without @)",
     },
     {

@@ -10,7 +10,7 @@ export default async function ArchivePage() {
       <div>
         <p className="hud-label mb-2">History</p>
         <h1 className="display-heading text-xl text-white glitch-text">Archive</h1>
-        <p className="text-slate-500 mt-1 text-sm font-mono">Past Vibe Coders events</p>
+        <p className="text-slate-500 mt-1 text-sm font-mono">Past NexCell events</p>
       </div>
       {events.length === 0 ? (
         <div className="text-center py-20 text-slate-500 hud-card p-10 font-mono">No past events yet</div>

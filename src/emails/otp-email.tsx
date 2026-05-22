@@ -23,16 +23,16 @@ export function OtpEmailTemplate({ otp, email, expiresAt, ipAddress }: OtpEmailP
   return (
     <Html>
       <Head />
-      <Preview>Your Vibe Coders login code: {otp} (expires in 5 minutes)</Preview>
+      <Preview>Your NexCell login code: {otp} (expires in 5 minutes)</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
 
           {/* Header */}
           <Section style={styles.header}>
             <Heading style={styles.logo}>
-              Vibe <span style={{ color: "#ffa16c" }}>Coders</span>
+              Nex<span style={{ color: "#06B6D4" }}>Cell</span>
             </Heading>
-            <Text style={styles.tagline}>VC Cell · Mirai School of Technology</Text>
+            <Text style={styles.tagline}>Entrepreneurship Club · Mirai School of Technology</Text>
           </Section>
 
           <Hr style={styles.divider} />
@@ -41,7 +41,7 @@ export function OtpEmailTemplate({ otp, email, expiresAt, ipAddress }: OtpEmailP
           <Section style={styles.content}>
             <Text style={styles.greeting}>Your login code</Text>
             <Text style={styles.instruction}>
-              Enter this code on the Vibe Coders login page to sign in.
+              Enter this code on the NexCell login page to sign in.
               Do not share this code with anyone.
             </Text>
 
@@ -84,10 +84,10 @@ export function OtpEmailTemplate({ otp, email, expiresAt, ipAddress }: OtpEmailP
           {/* Footer */}
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              Vibe Coders — VC Cell of Mirai School of Technology
+              NexCell — Entrepreneurship Club of Mirai School of Technology
             </Text>
             <Text style={styles.footerText}>
-              vibecoders.mirai@gmail.com · Instagram: @vibecoders.mirai
+              nexcell.mirai@gmail.com · Instagram: @nexcell.mirai
             </Text>
           </Section>
 
@@ -99,15 +99,15 @@ export function OtpEmailTemplate({ otp, email, expiresAt, ipAddress }: OtpEmailP
 
 const styles: Record<string, React.CSSProperties> = {
   body: {
-    backgroundColor: "#05130e",
+    backgroundColor: "#070B14",
     fontFamily:      "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     margin:          "0",
     padding:         "40px 16px",
   },
   container: {
-    backgroundColor: "#092017",
+    backgroundColor: "#0D1117",
     borderRadius:    "16px",
-    border:          "1px solid #184734",
+    border:          "1px solid #1C2540",
     maxWidth:        "520px",
     margin:          "0 auto",
     overflow:        "hidden",
@@ -117,40 +117,40 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign: "center",
   },
   logo: {
-    color:      "#faf6ee",
+    color:      "#ffffff",
     fontSize:   "28px",
     fontWeight: "700",
     margin:     "0 0 8px",
     letterSpacing: "-0.5px",
   },
   tagline: {
-    color:     "#889f93",
+    color:     "#64748B",
     fontSize:  "13px",
     margin:    "0",
   },
   divider: {
-    borderColor: "#184734",
+    borderColor: "#1C2540",
     margin:      "0",
   },
   content: {
     padding: "32px 40px",
   },
   greeting: {
-    color:      "#faf6ee",
+    color:      "#ffffff",
     fontSize:   "20px",
     fontWeight: "600",
     margin:     "0 0 8px",
   },
   instruction: {
-    color:      "#dcd7cc",
+    color:      "#94A3B8",
     fontSize:   "14px",
     lineHeight: "1.6",
     margin:     "0 0 28px",
   },
   otpContainer: {
-    backgroundColor: "#103426",
+    backgroundColor: "#141B2D",
     borderRadius:    "12px",
-    border:          "1px solid #184734",
+    border:          "1px solid #1C2540",
     padding:         "20px",
     textAlign:       "center",
     marginBottom:    "16px",
@@ -159,7 +159,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "0 6px",
   },
   digit: {
-    color:           "#ffa16c",
+    color:           "#06B6D4",
     fontSize:        "36px",
     fontWeight:      "700",
     fontFamily:      "monospace",
@@ -168,7 +168,7 @@ const styles: Record<string, React.CSSProperties> = {
     textAlign:       "center",
   },
   expiry: {
-    color:     "#889f93",
+    color:     "#64748B",
     fontSize:  "13px",
     textAlign: "center",
     margin:    "0",
@@ -177,7 +177,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "24px 40px",
   },
   securityTitle: {
-    color:      "#ffa16c",
+    color:      "#94A3B8",
     fontSize:   "12px",
     fontWeight: "600",
     textTransform: "uppercase" as const,
@@ -185,24 +185,24 @@ const styles: Record<string, React.CSSProperties> = {
     margin:     "0 0 8px",
   },
   securityText: {
-    color:      "#889f93",
+    color:      "#64748B",
     fontSize:   "13px",
     lineHeight: "1.6",
     margin:     "0 0 8px",
   },
   ipText: {
-    color:      "#5f7c6b",
+    color:      "#475569",
     fontSize:   "12px",
     fontFamily: "monospace",
     margin:     "0",
   },
   footer: {
-    borderTop: "1px solid #184734",
+    borderTop: "1px solid #1C2540",
     padding:   "20px 40px",
     textAlign: "center",
   },
   footerText: {
-    color:     "#5f7c6b",
+    color:     "#475569",
     fontSize:  "12px",
     margin:    "0 0 4px",
   },

@@ -1,5 +1,5 @@
 /**
- * VIBE CODERS DATABASE SCHEMA
+ * NEX-CELL DATABASE SCHEMA
  * Built with Drizzle ORM for Neon (serverless PostgreSQL)
  *
  * Tables:
@@ -109,7 +109,6 @@ export const users = pgTable("users", {
   email:       text("email").notNull().unique(),
   name:        text("name"),
   phone:       text("phone"),
-  passwordHash: text("password_hash"), // Nullable for backward compatibility with OTP-only users
   bio:         text("bio"),
   linkedinUrl: text("linkedin_url"),
   showInDirectory: boolean("show_in_directory").notNull().default(false),

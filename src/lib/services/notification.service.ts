@@ -181,7 +181,7 @@ export async function notifyRoleChanged(params: {
     userId: params.userId,
     type:   "role_changed",
     title:  "Your role has been updated",
-    body:   `You have been assigned the "${params.newRole}" role on Vibe Coders.`,
+    body:   `You have been assigned the "${params.newRole}" role on NexCell.`,
     link:   "/dashboard",
   });
 }
